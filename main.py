@@ -1,3 +1,5 @@
+#! /usr/bin/env python
+
 from datetime import datetime, timedelta
 from colbertix import TicketBot
 from ConfigParser import ConfigParser
