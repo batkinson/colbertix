@@ -7,16 +7,18 @@ Colbert Report using their web site.
 
 To run this program, you'll need:
 
-  * a working Python 2 environment
+  * A working Python 2 environment
   * Google Chrome Web Browser
-  * ChromeDriver
+  * [ChromeDriver](https://code.google.com/p/selenium/wiki/ChromeDriver)
 
 ## Setup
 
 To run the program, you just need to install the dependencies. This should be
 as simple as running:
 
+```
 pip install -r requirements.txt
+```
 
 ## Configuration
 
@@ -28,7 +30,9 @@ config.ini. Once you do this, you should be ready to run the bot.
 
 To run the bot program, you just need to run the main.py file:
 
+```
 python main.py
+```
 
 The bot will search for tickets based on the information you provided in the
 config file, and will stop once it has successfully registered for tickets. It
