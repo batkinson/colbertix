@@ -3,6 +3,25 @@
 A simple program that automates finding and registering for tickets to the
 Colbert Report using their web site.
 
+## Why?
+
+There is already a twitter feed Spiffomatic64, or @DailyTix, that provides
+a real-time view of available tickets for the Colbert Report and the Daily
+Show. What purpose does this serve?
+
+Well, after a number of attempts to snag tickets by clicking the link
+and filling out the form only to see that the tickets were already taken,
+I decided to change my strategy. Colbert tickets seem to be more scarce, 
+and while the twitter feed is helpful in identifying when there are tickets,
+with an average delay of 1/2 its polling interval, it didn't help to 
+registering for the tickets. I needed a seeker-missile or a ninja-sniper.
+
+This program uses a real browser to not only identify when tickets are 
+available, but it immediately register for them at computer-speeds. Armed with
+this program I got tickets for the time I wanted, the first time, and without
+having to monitor twitter. 
+
+
 ## Requirements
 
 To run this program, you'll need:
