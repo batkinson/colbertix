@@ -66,4 +66,5 @@ class ConfigTest(TestCase):
 
     def test_comments(self):
         cfg = Config('test_configs/commented_url.ini')
+        self.assertEqual(COLBERT_REPORT_URL, cfg.get_config_options()['url'])
 
