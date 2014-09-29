@@ -155,7 +155,8 @@ class TicketBot(object):
         d.find_element_by_id("fld_terms").click()
         d.find_element_by_id("lnk_form_ticket_submit").click()
 
-    def sign_up(self, url=COLBERT_REPORT_URL, info=None, wanted_tickets=2, start_date=None, end_date=None, bad_dates=None):
+    def sign_up(self, url=COLBERT_REPORT_URL, info=None, wanted_tickets=2, start_date=None, end_date=None,
+                bad_dates=None):
 
         """Runs a single attempt to sign up for tickets. 
            Returns True if successful, otherwise False."""

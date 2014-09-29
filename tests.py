@@ -28,6 +28,7 @@ SAMPLE_CONFIG_OPTIONS = {'url': COLBERT_REPORT_URL,
                                        datetime(2014, 8, 31),
                                        datetime(2014, 9, 1)]}
 
+
 class ConfigTest(TestCase):
 
     def setUp(self):
@@ -153,3 +154,102 @@ class TicketBotTest(TestCase):
             self.bot.close.assert_called()
             mock_sleep.assert_called_with(SAMPLE_CONFIG_OPTIONS['wait_seconds'])
             self.assertEqual(1, self.bot.attempts)
+
+    def test_sign_up_simple(self):
+        options = dict(SAMPLE_CONFIG_OPTIONS)
+        del options['wait_seconds']
+        self.bot.browse_to = Mock()
+        self.bot.get_num_tickets = Mock(return_value=4)
+        self.bot.get_ticket_date = Mock(return_value=('2014/08/09', datetime(2014, 8, 9)))
+        self.bot.register_form = Mock()
+        self.assertTrue(self.bot.sign_up(info=SAMPLE_USER_INFO, **options), 'Successful should return true')
+        self.bot.browse_to.assert_called_once_with(options['url'])
+        self.bot.get_num_tickets.assert_called()
+        self.bot.get_ticket_date.assert_called()
+        self.bot.register_form.assert_called_once_with(options['wanted_tickets'], SAMPLE_USER_INFO)
+
+    def test_sign_up_bad_date(self):
+        options = dict(SAMPLE_CONFIG_OPTIONS)
+        del options['wait_seconds']
+        self.bot.browse_to = Mock()
+        self.bot.get_num_tickets = Mock(return_value=4)
+        self.bot.get_ticket_date = Mock(return_value=('2014/08/23', datetime(2014, 8, 23)))
+        self.bot.register_form = Mock()
+        self.assertFalse(self.bot.sign_up(info=SAMPLE_USER_INFO, **options), 'Bad dates should return false')
+        self.bot.browse_to.assert_called_once_with(options['url'])
+        self.bot.get_num_tickets.assert_called()
+        self.bot.get_ticket_date.assert_called()
+
+    def test_sign_up_before_start_date(self):
+        options = dict(SAMPLE_CONFIG_OPTIONS)
+        del options['wait_seconds']
+        self.bot.browse_to = Mock()
+        self.bot.get_num_tickets = Mock(return_value=4)
+        self.bot.get_ticket_date = Mock(return_value=('2014/07/23', datetime(2014, 7, 23)))
+        self.bot.register_form = Mock()
+        self.assertFalse(self.bot.sign_up(info=SAMPLE_USER_INFO, **options), 'Bad dates should return false')
+        self.bot.browse_to.assert_called_once_with(options['url'])
+        self.bot.get_num_tickets.assert_called()
+        self.bot.get_ticket_date.assert_called()
+
+    def test_sign_up_after_end_date(self):
+        options = dict(SAMPLE_CONFIG_OPTIONS)
+        del options['wait_seconds']
+        self.bot.browse_to = Mock()
+        self.bot.get_num_tickets = Mock(return_value=4)
+        self.bot.get_ticket_date = Mock(return_value=('2015/08/23', datetime(2015, 8, 23)))
+        self.bot.register_form = Mock()
+        self.assertFalse(self.bot.sign_up(info=SAMPLE_USER_INFO, **options), 'Bad dates should return false')
+        self.bot.browse_to.assert_called_once_with(options['url'])
+        self.bot.get_num_tickets.assert_called()
+        self.bot.get_ticket_date.assert_called()
+
+    def test_sign_up_no_start_date(self):
+        options = dict(SAMPLE_CONFIG_OPTIONS)
+        del options['wait_seconds']
+        del options['start_date']
+        self.bot.browse_to = Mock()
+        self.bot.get_num_tickets = Mock(return_value=4)
+        self.bot.get_ticket_date = Mock(return_value=('2014/08/23', datetime(2014, 8, 9)))
+        self.bot.register_form = Mock()
+        self.assertTrue(self.bot.sign_up(info=SAMPLE_USER_INFO, **options), 'No start date should return true')
+        self.bot.browse_to.assert_called_once_with(options['url'])
+        self.bot.get_num_tickets.assert_called()
+        self.bot.get_ticket_date.assert_called()
+
+    def test_sign_up_no_end_date(self):
+        options = dict(SAMPLE_CONFIG_OPTIONS)
+        del options['wait_seconds']
+        del options['end_date']
+        self.bot.browse_to = Mock()
+        self.bot.get_num_tickets = Mock(return_value=4)
+        self.bot.get_ticket_date = Mock(return_value=('2015/08/23', datetime(2015, 8, 23)))
+        self.bot.register_form = Mock()
+        self.assertTrue(self.bot.sign_up(info=SAMPLE_USER_INFO, **options), 'No start date should return true')
+        self.bot.browse_to.assert_called_once_with(options['url'])
+        self.bot.get_num_tickets.assert_called()
+        self.bot.get_ticket_date.assert_called()
+
+    def test_sign_up_not_enough_tickets(self):
+        options = dict(SAMPLE_CONFIG_OPTIONS)
+        del options['wait_seconds']
+        self.bot.browse_to = Mock()
+        self.bot.get_num_tickets = Mock(return_value=1)
+        self.bot.get_ticket_date = Mock(return_value=('2014/08/09', datetime(2014, 8, 9)))
+        self.bot.register_form = Mock()
+        self.assertFalse(self.bot.sign_up(info=SAMPLE_USER_INFO, **options), 'Not enough tickets should return false')
+        self.bot.browse_to.assert_called_once_with(options['url'])
+        self.bot.get_num_tickets.assert_called()
+        self.bot.get_ticket_date.assert_called()
+
+    def test_sign_up_undetermined_date(self):
+        options = dict(SAMPLE_CONFIG_OPTIONS)
+        del options['wait_seconds']
+        self.bot.browse_to = Mock()
+        self.bot.get_num_tickets = Mock(return_value=4)
+        self.bot.get_ticket_date = Mock(return_value=(None, None))
+        self.bot.register_form = Mock()
+        self.assertFalse(self.bot.sign_up(info=SAMPLE_USER_INFO, **options), 'No date should return false')
+        self.bot.browse_to.assert_called_once_with(options['url'])
+        self.bot.get_num_tickets.assert_called()
+        self.bot.get_ticket_date.assert_called()
