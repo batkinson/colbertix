@@ -47,13 +47,13 @@ config.ini. Once you do this, you should be ready to run the bot.
 
 ## Running
 
-To run the bot program, you just need to run the main.py file:
+To run the bot, you just need to run:
 
 ```
-python main.py
+./colbertix.py
 ```
 
 The bot will search for tickets based on the information you provided in the
 config file, and will stop once it has successfully registered for tickets. It
-will also take a screenshot of the state of the application immediately 
+will also take a screen shot of the state of the application immediately 
 following registration for your reference.

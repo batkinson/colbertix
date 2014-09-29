@@ -1,3 +1,5 @@
+#! /usr/bin/env python
+
 from selenium import webdriver
 from selenium.webdriver.support.ui import Select
 from selenium.common.exceptions import NoSuchElementException
@@ -207,3 +209,12 @@ class TicketBot(object):
         driver = self.driver
         driver.quit()
 
+
+if __name__ == '__main__':
+
+    cfg = Config('config.ini')
+    user_info = cfg.get_user_info()
+    config_options = cfg.get_config_options()
+
+    ticket_bot = TicketBot()
+    ticket_bot.reserve_tickets(info=user_info, **config_options)
