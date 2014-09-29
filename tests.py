@@ -1,7 +1,9 @@
 from unittest import TestCase
-from colbertix import Config, COLBERT_REPORT_URL, DAILY_SHOW_URL
+from colbertix import Config, TicketBot, COLBERT_REPORT_URL, DAILY_SHOW_URL
 from datetime import datetime
 from ConfigParser import NoSectionError, NoOptionError
+from mock import Mock
+from selenium.webdriver import Remote
 
 
 class ConfigTest(TestCase):
@@ -67,4 +69,16 @@ class ConfigTest(TestCase):
     def test_comments(self):
         cfg = Config('test_configs/commented_url.ini')
         self.assertEqual(COLBERT_REPORT_URL, cfg.get_config_options()['url'])
+
+
+class TicketBotTest(TestCase):
+
+    def setUp(self):
+        self.mock_driver = Mock(spec=Remote)
+        self.bot = TicketBot(self.mock_driver)
+
+    def test_browse_to(self):
+        expected_url = 'http://www.example.com/'
+        self.bot.browse_to(expected_url)
+        self.mock_driver.get.assert_called_with(expected_url)
 
