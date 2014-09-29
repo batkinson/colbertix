@@ -1,6 +1,9 @@
+.coverage
 .project
 .pydevproject
 *.pyc
 *.png
 config.ini
 .idea/
+htmlcov/
+
