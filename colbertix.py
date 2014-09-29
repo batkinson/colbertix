@@ -102,12 +102,14 @@ class TicketBot(object):
         ticket_bot.reserve_tickets(info=user_info, **config_options)
     """
 
-    def __init__(self):
+    def __init__(self, driver):
         """Initializer for the bot. It will start the web browser and wait for commands."""
-        self.driver = webdriver.Chrome()
-        self.driver.implicitly_wait(1)
-        self.driver.maximize_window()
-        self.accept_next_alert = True
+        if driver:
+            self.driver = driver
+        else:
+            self.driver = webdriver.Chrome()
+            self.driver.implicitly_wait(1)
+            self.driver.maximize_window()
 
     def browse_to(self, url):
         """Requests the ticket website. This will refresh the page as well."""
