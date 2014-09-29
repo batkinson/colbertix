@@ -38,15 +38,19 @@ class Config:
                                'evening_phone', 'mobile_phone', 'email']
 
     def get(self, section, name):
+        """Returns the string value for given section and option name."""
         return self.parser.get(section, name)
 
     def get_date(self, section, name):
+        """Returns the date value for given section and option name."""
         return parse_date(self.get(section, name))
 
     def get_int(self, section, name):
+        """Returns the int value for given section and option name."""
         return self.parser.getint(section, name)
 
     def get_dates(self, section, name):
+        """Returns the date list value for given section and option name."""
         def expand_to_dates(dates_and_ranges):
             result = []
             for date_or_range in dates_and_ranges:
@@ -64,9 +68,11 @@ class Config:
         return expand_to_dates(date_strings)
 
     def get_user_info(self):
+        """Returns a dict containing user information options."""
         return dict([(key, self.get('user-info', key)) for key in self.user_info_keys])
 
     def get_config_options(self):
+        """Returns a dict containing program configuration options."""
         result = dict()
         result.update(dict([(key, self.get_int('config', key)) for key in self.int_config_options]))
         result.update(dict([(key, self.get_date('config', key)) for key in self.date_config_options]))
