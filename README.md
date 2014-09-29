@@ -1,7 +1,7 @@
 # Colbert Ticket Bot
 
-A simple program that automates finding and registering for tickets to the
-Colbert Report using their web site.
+A simple program that automates finding and registering for tickets to Comedy
+Central shows, like the Colbert Report and The Daily Show, via their web site.
 
 ## Why?
 
@@ -11,15 +11,14 @@ Show. What purpose does this serve?
 
 Well, after a number of attempts to snag tickets by clicking the link
 and filling out the form only to see that the tickets were already taken,
-I decided to change my strategy. Colbert tickets seem to be more scarce, 
+I decided to change my strategy. Colbert tickets seem to be scarce these days, 
 and while the twitter feed is helpful in identifying when there are tickets,
-with an average delay of 1/2 its polling interval, it didn't help to 
-registering for the tickets. I needed a seeker-missile or a ninja-sniper.
+it doesn't do much to help you register for them. You can think of the twitter
+bot as radar, allowing you to see when there are tickets. This program is a
+guided missile, which will both detect and get the tickets for you.
 
-This program uses a real browser to not only identify when tickets are 
-available, but it immediately register for them at computer-speeds. Armed with
-this program I got tickets for the time I wanted, the first time, and without
-having to monitor twitter. 
+Use this program if you want to get tickets the first time, for the right date,
+without ever having to monitor twitter.
 
 
 ## Requirements
