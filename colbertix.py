@@ -191,17 +191,22 @@ class TicketBot(object):
 
         self.driver.get_screenshot_as_file("tickets-%s-%s.png" % (datetime.now().isoformat(), msgtype))
 
-    def reserve_tickets(self, wait_seconds=1, screencapture_failed=False, **kwargs):
+    def reserve_tickets(self, wait_seconds=1, screencapture_failed=False, max_attempts=None, **kwargs):
 
         """Repeatedly tries to sign up for tickets. If successful, it takes a 
         screenshot, closes the browser and halts."""
-
-        while not self.sign_up(**kwargs):
-            if screencapture_failed:
-                self.take_screenshot('FAILED')
-            sleep(wait_seconds)
-        sleep(wait_seconds)
-        self.take_screenshot()
+        self.attempts = 0
+        self.finished = False
+        while not self.finished and (not max_attempts or self.attempts < max_attempts):
+            self.finished = self.sign_up(**kwargs)
+            self.attempts += 1
+            if self.finished:
+                sleep(1)
+                self.take_screenshot()
+            else:
+                if screencapture_failed:
+                    self.take_screenshot('FAILED')
+                sleep(wait_seconds)
         self.close()
 
     def close(self):
