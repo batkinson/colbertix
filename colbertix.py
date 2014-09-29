@@ -90,27 +90,16 @@ class TicketBot(object):
 
     """A bot that can poll the Colbert Report web site and sign up for tickets.
 
-       Usage:
+        Usage:
 
-       from colbertix import TicketBot
-       from datetime import datetime
+        from colbertix import Config, TicketBot
 
-       info = dict(first_name='John',
-                   last_name='Doe',
-                   zip='10003',
-                   state='NY',
-                   daytime_phone='6165551212',
-                   evening_phone='6165551212',
-                   mobile_phone='6165551212',
-                   email='example@example.com')
+        cfg = Config('config.ini')
+        user_info = cfg.get_user_info()
+        config_options = cfg.get_config_options()
 
-       start = datetime(2014, 8, 1)
-       end = datetime(2014, 8, 31)
-       blackouts = [ datetime(2014, 8, 24) ]
-
-       tixbot = TicketBot()
-       tixbot.reserve_tickets(wanted_tickets=2, info=info, start_date=start,
-                              end_date=end, bad_dates=blackouts)
+        ticket_bot = TicketBot()
+        ticket_bot.reserve_tickets(info=user_info, **config_options)
     """
 
     def __init__(self):
