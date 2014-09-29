@@ -1,8 +1,75 @@
 from selenium import webdriver
 from selenium.webdriver.support.ui import Select
 from selenium.common.exceptions import NoSuchElementException
-from datetime import datetime
 from time import sleep
+from ConfigParser import ConfigParser
+from warnings import warn
+from datetime import datetime, timedelta
+
+
+def date_range(start, end, increment=1):
+    """Generates a date range from start to end inclusive by increment days."""
+    time_inc = timedelta(days=increment)
+    current = start
+    while current <= end:
+        yield current
+        current += time_inc
+
+
+def parse_date(s):
+    """Converts a string in the form mm/dd/yyyy into a datetime object."""
+    return datetime.strptime(s, '%m/%d/%Y')
+
+
+class Config:
+
+    """A utility class for handling configuration of the colbertix config file."""
+
+    def __init__(self, file_name):
+        self.parser = ConfigParser()
+        self.file_name = file_name
+        self.parser.read(self.file_name)
+        self.int_config_options = ['wanted_tickets', 'wait_seconds']
+        self.date_config_options = ['start_date', 'end_date']
+        self.dates_config_options = ['bad_dates']
+        self.user_info_keys = ['first_name', 'last_name', 'zip', 'state', 'daytime_phone',
+                               'evening_phone', 'mobile_phone', 'email']
+
+    def get(self, section, name):
+        return self.parser.get(section, name)
+
+    def get_date(self, section, name):
+        return parse_date(self.get(section, name))
+
+    def get_int(self, section, name):
+        return self.parser.getint(section, name)
+
+    def get_dates(self, section, name):
+        def expand_to_dates(dates_and_ranges):
+            result = []
+            for date_or_range in dates_and_ranges:
+                try:
+                    bd = date_or_range.split('-')
+                    if len(bd) == 1 and bd[0].strip() != '':
+                        result.append(parse_date(bd[0]))
+                    elif len(bd) == 2:
+                        start, end = [parse_date(item) for item in bd]
+                        result += list(date_range(start, end))
+                except ValueError as date_error:
+                    warn("failed to parse date '%s': %s" % (date_or_range, date_error.message))
+            return result
+        date_strings = [val.strip() for val in self.get(section, name).split(',')]
+        return expand_to_dates(date_strings)
+
+    def get_user_info(self):
+        return dict([(key, self.get('user-info', key)) for key in self.user_info_keys])
+
+    def get_config_options(self):
+        result = dict()
+        result.update(dict([(key, self.get_int('config', key)) for key in self.int_config_options]))
+        result.update(dict([(key, self.get_date('config', key)) for key in self.date_config_options]))
+        result.update(dict([(key, self.get_dates('config', key)) for key in self.dates_config_options]))
+        return result
 
 
 class TicketBot(object):
@@ -40,11 +107,9 @@ class TicketBot(object):
         self.base_url = "http://impresario.comedycentral.com/show/5b2eb3b0eb99f143"
         self.accept_next_alert = True
 
-
     def visit_site(self):
         """Requests the ticket website. This will refresh the page as well."""
         self.driver.get(self.base_url)
-
 
     def get_num_tickets(self):
         """Attempts to extract the number of tickets from the current page."""
@@ -55,7 +120,6 @@ class TicketBot(object):
         except NoSuchElementException:
             return 0
 
-
     def get_ticket_date(self):
         """Attempts to extract the date tickets are available from the page."""
         try:
@@ -64,7 +128,6 @@ class TicketBot(object):
             return (datestr, datetime.strptime(datestr, "%B %d, %Y"))
         except NoSuchElementException:
             return (None, None)
-
 
     def register_form(self, wanted_tickets, info):
         """Fills out the registration form on the current page."""
@@ -87,7 +150,6 @@ class TicketBot(object):
         d.find_element_by_id("fld_emailVerify").send_keys(info['email'])
         d.find_element_by_id("fld_terms").click()
         d.find_element_by_id("lnk_form_ticket_submit").click()
-
 
     def sign_up(self, info=None, wanted_tickets=2, start_date=None, end_date=None, bad_dates=None):
 
@@ -119,13 +181,11 @@ class TicketBot(object):
 
         return True
 
-
     def take_screenshot(self, msgtype="SUCCESS"):
 
         """Takes picture of the web browser screen."""
 
         self.driver.get_screenshot_as_file("tickets-%s-%s.png" % (datetime.now().isoformat(), msgtype))
-
 
     def reserve_tickets(self, wait_seconds=1, screencapture_failed=False, **kwargs):
 
@@ -139,7 +199,6 @@ class TicketBot(object):
         sleep(wait_seconds)
         self.take_screenshot()
         self.close()
-
 
     def close(self):
 
