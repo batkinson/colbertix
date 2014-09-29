@@ -9,6 +9,10 @@ from warnings import warn
 from datetime import datetime, timedelta
 
 
+COLBERT_REPORT_URL = 'http://impresario.comedycentral.com/show/5b2eb3b0eb99f143'
+DAILY_SHOW_URL = 'http://impresario.comedycentral.com/show/e0d100ed55c2dc9e'
+
+
 def date_range(start, end, increment=1):
     """Generates a date range from start to end inclusive by increment days."""
     time_inc = timedelta(days=increment)
@@ -31,6 +35,7 @@ class Config:
         self.parser = ConfigParser()
         self.file_name = file_name
         self.parser.read(self.file_name)
+        self.str_config_options = ['url']
         self.int_config_options = ['wanted_tickets', 'wait_seconds']
         self.date_config_options = ['start_date', 'end_date']
         self.dates_config_options = ['bad_dates']
@@ -74,6 +79,7 @@ class Config:
     def get_config_options(self):
         """Returns a dict containing program configuration options."""
         result = dict()
+        result.update(dict([(key, self.get('config', key)) for key in self.str_config_options]))
         result.update(dict([(key, self.get_int('config', key)) for key in self.int_config_options]))
         result.update(dict([(key, self.get_date('config', key)) for key in self.date_config_options]))
         result.update(dict([(key, self.get_dates('config', key)) for key in self.dates_config_options]))
@@ -112,12 +118,11 @@ class TicketBot(object):
         self.driver = webdriver.Chrome()
         self.driver.implicitly_wait(1)
         self.driver.maximize_window()
-        self.base_url = "http://impresario.comedycentral.com/show/5b2eb3b0eb99f143"
         self.accept_next_alert = True
 
-    def visit_site(self):
+    def browse_to(self, url):
         """Requests the ticket website. This will refresh the page as well."""
-        self.driver.get(self.base_url)
+        self.driver.get(url)
 
     def get_num_tickets(self):
         """Attempts to extract the number of tickets from the current page."""
@@ -159,12 +164,12 @@ class TicketBot(object):
         d.find_element_by_id("fld_terms").click()
         d.find_element_by_id("lnk_form_ticket_submit").click()
 
-    def sign_up(self, info=None, wanted_tickets=2, start_date=None, end_date=None, bad_dates=None):
+    def sign_up(self, url=COLBERT_REPORT_URL, info=None, wanted_tickets=2, start_date=None, end_date=None, bad_dates=None):
 
         """Runs a single attempt to sign up for tickets. 
            Returns True if successful, otherwise False."""
 
-        self.visit_site()
+        self.browse_to(url)
 
         # Determine if there are an acceptable number of tickets available
         num_tickets = self.get_num_tickets()

@@ -1,5 +1,5 @@
 from unittest import TestCase
-from colbertix import Config
+from colbertix import Config, COLBERT_REPORT_URL, DAILY_SHOW_URL
 from datetime import datetime
 from ConfigParser import NoSectionError, NoOptionError
 
@@ -22,7 +22,8 @@ class ConfigTest(TestCase):
         self.assertEqual(expected, user_info)
 
     def test_example_config_options(self):
-        expected = {'wanted_tickets': 2,
+        expected = {'url': COLBERT_REPORT_URL,
+                    'wanted_tickets': 2,
                     'wait_seconds': 1,
                     'start_date': datetime(2014, 8, 8),
                     'end_date': datetime(2014, 10, 15),
@@ -58,3 +59,11 @@ class ConfigTest(TestCase):
         cfg = Config('test_configs/missing_bad_dates.ini')
         with self.assertRaises(NoOptionError):
             cfg.get_dates('config', 'bad_dates')
+
+    def test_alternative_url(self):
+        cfg = Config('test_configs/daily_show_url.ini')
+        self.assertEqual(DAILY_SHOW_URL, cfg.get_config_options()['url'])
+
+    def test_comments(self):
+        cfg = Config('test_configs/commented_url.ini')
+
