@@ -4,7 +4,8 @@ from colbertix import Config, TicketBot, COLBERT_REPORT_URL, DAILY_SHOW_URL
 from datetime import datetime
 from ConfigParser import NoSectionError, NoOptionError
 from mock import Mock, patch
-from selenium.webdriver import Remote, Chrome
+from selenium.webdriver import Remote
+from selenium.common.exceptions import NoSuchElementException
 
 
 SAMPLE_USER_INFO = {'first_name': 'John',
@@ -284,3 +285,16 @@ class TicketBotTest(TestCase):
             mock_chrome.assert_called()
             mock_init.assert_called_once_with(t, mock_chrome())
 
+    def test_get_num_tickets_failed(self):
+        def raise_no_element(*args):
+            raise NoSuchElementException
+        self.mock_driver.find_element_by_css_selector = Mock(side_effect=raise_no_element)
+        result = self.bot.get_num_tickets()
+        self.assertEquals(0, result)
+
+    def test_get_ticket_date_failed(self):
+        def raise_no_element(*args):
+            raise NoSuchElementException
+        self.mock_driver.find_element_by_css_selector = Mock(side_effect=raise_no_element)
+        result = self.bot.get_ticket_date()
+        self.assertEquals((None, None), result)
