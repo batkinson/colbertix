@@ -92,14 +92,9 @@ class TicketBot(object):
 
         Usage:
 
-        from colbertix import Config, TicketBot
+        from colbertix import TicketBot, Config
 
-        cfg = Config('config.ini')
-        user_info = cfg.get_user_info()
-        config_options = cfg.get_config_options()
-
-        ticket_bot = TicketBot()
-        ticket_bot.reserve_tickets(info=user_info, **config_options)
+        TicketBot().run(Config('config.ini'))
     """
 
     def __init__(self, driver=None):
