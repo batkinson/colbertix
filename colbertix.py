@@ -102,14 +102,18 @@ class TicketBot(object):
         ticket_bot.reserve_tickets(info=user_info, **config_options)
     """
 
-    def __init__(self, driver):
+    def __init__(self, driver=None):
         """Initializer for the bot. It will start the web browser and wait for commands."""
         if driver:
             self.driver = driver
         else:
-            self.driver = webdriver.Chrome()
-            self.driver.implicitly_wait(1)
-            self.driver.maximize_window()
+            self._driver_init(webdriver.Chrome())
+
+    def _driver_init(self, driver):
+        """Initializes the driver implementation."""
+        driver.implicitly_wait(1)
+        driver.maximize_window()
+        self.driver = driver
 
     def browse_to(self, url):
         """Requests the ticket website. This will refresh the page as well."""
@@ -196,6 +200,7 @@ class TicketBot(object):
 
         """Repeatedly tries to sign up for tickets. If successful, it takes a 
         screenshot, closes the browser and halts."""
+
         self.attempts = 0
         self.finished = False
         while not self.finished and (not max_attempts or self.attempts < max_attempts):
@@ -217,12 +222,14 @@ class TicketBot(object):
         driver = self.driver
         driver.quit()
 
+    def run(self, cfg):
+
+        """Runs the bot with the specified config."""
+
+        user_info = cfg.get_user_info()
+        config_options = cfg.get_config_options()
+        self.reserve_tickets(info=user_info, **config_options)
+
 
 if __name__ == '__main__':
-
-    cfg = Config('config.ini')
-    user_info = cfg.get_user_info()
-    config_options = cfg.get_config_options()
-
-    ticket_bot = TicketBot()
-    ticket_bot.reserve_tickets(info=user_info, **config_options)
+    TicketBot().run(Config('config.ini'))

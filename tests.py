@@ -4,7 +4,8 @@ from colbertix import Config, TicketBot, COLBERT_REPORT_URL, DAILY_SHOW_URL
 from datetime import datetime
 from ConfigParser import NoSectionError, NoOptionError
 from mock import Mock, patch
-from selenium.webdriver import Remote
+from selenium.webdriver import Remote, Chrome
+
 
 SAMPLE_USER_INFO = {'first_name': 'John',
                     'last_name': 'Doe',
@@ -81,6 +82,15 @@ class ScreenshotMatcher(object):
 
     def __eq__(self, other):
         return self.pattern.search(other)
+
+
+class TypeMatcher(object):
+
+    def __init__(self, typ):
+        self.type = typ
+
+    def __eq__(self, other):
+        return isinstance(other, self.type)
 
 
 class TicketBotTest(TestCase):
@@ -253,3 +263,24 @@ class TicketBotTest(TestCase):
         self.bot.browse_to.assert_called_once_with(options['url'])
         self.bot.get_num_tickets.assert_called()
         self.bot.get_ticket_date.assert_called()
+
+    def test_run(self):
+        cfg = Config('config.ini-example')
+        self.bot.reserve_tickets = Mock()
+        self.bot.run(cfg)
+        self.bot.reserve_tickets.assert_called_once_with(info=SAMPLE_USER_INFO, **SAMPLE_CONFIG_OPTIONS)
+
+    def test_driver_init(self):
+        driver = Mock(spec=Remote)
+        self.bot._driver_init(driver)
+        driver.implicitly_wait.assert_called_once_with(1)
+        driver.maximize_window.assert_called_once_with()
+        self.assertEquals(driver, self.bot.driver)
+
+    def test_default_init_creates_chrome(self):
+        with patch('colbertix.webdriver.Chrome') as mock_chrome, \
+                patch.object(TicketBot, '_driver_init', autospec=True) as mock_init:
+            t = TicketBot()
+            mock_chrome.assert_called()
+            mock_init.assert_called_once_with(t, mock_chrome())
+
