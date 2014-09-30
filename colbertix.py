@@ -104,6 +104,8 @@ class TicketBot(object):
 
     def __init__(self, driver=None):
         """Initializer for the bot. It will start the web browser and wait for commands."""
+        self.attempts = None
+        self.finished = None
         if driver:
             self.driver = driver
         else:
@@ -133,9 +135,9 @@ class TicketBot(object):
         try:
             elem_css = "span.current_date"
             datestr = self.driver.find_element_by_css_selector(elem_css).text
-            return (datestr, datetime.strptime(datestr, "%B %d, %Y"))
+            return datestr, datetime.strptime(datestr, "%B %d, %Y")
         except NoSuchElementException:
-            return (None, None)
+            return None, None
 
     def register_form(self, wanted_tickets, info):
         """Fills out the registration form on the current page."""
@@ -144,7 +146,7 @@ class TicketBot(object):
         if wanted_tickets == 1:
             ticket_sel = "1 ticket"
         else:
-            ticket_sel = "%s tickets" % (wanted_tickets)
+            ticket_sel = "%s tickets" % wanted_tickets
 
         Select(d.find_element_by_id("fld_tickets_number")).select_by_visible_text(ticket_sel)    
         d.find_element_by_id("fld_firstname").send_keys(info['first_name'])
@@ -179,9 +181,8 @@ class TicketBot(object):
             return False
 
         # Determine if the tickets are for an acceptable date
-        if (start_date and ticket_date < start_date) or \
-            (end_date and ticket_date > end_date) or \
-            (bad_dates and ticket_date in bad_dates):
+        if (start_date and ticket_date < start_date) or (end_date and ticket_date > end_date) \
+                or (bad_dates and ticket_date in bad_dates):
             print "%s tickets are available for %s, but it's bad date for you." % (num_tickets, ticket_datestr)
             return False
 
