@@ -7,5 +7,6 @@ branch = True
 exclude_lines =
     # Don't complain if non-runnable code isn't run:
     if __name__ == .__main__.:
+    if submit:
 
 ignore_errors = True

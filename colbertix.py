@@ -1,12 +1,10 @@
-#! /usr/bin/env python
+#!/usr/bin/env python
 
-from selenium import webdriver
-from selenium.webdriver.support.ui import Select
-from selenium.common.exceptions import NoSuchElementException
 from time import sleep
 from ConfigParser import ConfigParser
 from warnings import warn
 from datetime import datetime, timedelta
+from browser import Browser, Page
 
 
 COLBERT_REPORT_URL = 'http://impresario.comedycentral.com/show/5b2eb3b0eb99f143'
@@ -56,6 +54,7 @@ class Config:
 
     def get_dates(self, section, name):
         """Returns the date list value for given section and option name."""
+
         def expand_to_dates(dates_and_ranges):
             result = []
             for date_or_range in dates_and_ranges:
@@ -69,163 +68,105 @@ class Config:
                 except ValueError as date_error:
                     warn("failed to parse date '%s': %s" % (date_or_range, date_error.message))
             return result
+
         date_strings = [val.strip() for val in self.get(section, name).split(',')]
         return expand_to_dates(date_strings)
 
     def get_user_info(self):
         """Returns a dict containing user information options."""
-        return dict([(key, self.get('user-info', key)) for key in self.user_info_keys])
+        return dict((key, self.get('user-info', key)) for key in self.user_info_keys)
 
     def get_config_options(self):
         """Returns a dict containing program configuration options."""
         result = dict()
-        result.update(dict([(key, self.get('config', key)) for key in self.str_config_options]))
-        result.update(dict([(key, self.get_int('config', key)) for key in self.int_config_options]))
-        result.update(dict([(key, self.get_date('config', key)) for key in self.date_config_options]))
-        result.update(dict([(key, self.get_dates('config', key)) for key in self.dates_config_options]))
+        gets = [self.get, self.get_int, self.get_date, self.get_dates]
+        cfgs = [self.str_config_options, self.int_config_options, self.date_config_options, self.dates_config_options]
+        for get, cfg in zip(gets, cfgs):
+            result.update(dict((key, get('config', key)) for key in cfg))
         return result
 
 
 class TicketBot(object):
-
     """A bot that can poll the Colbert Report web site and sign up for tickets.
 
         Usage:
 
         from colbertix import TicketBot, Config
 
-        TicketBot().run(Config('config.ini'))
+        TicketBot().run('config.ini')
     """
 
-    def __init__(self, driver=None):
+    def __init__(self, browser, page, cfg):
         """Initializer for the bot. It will start the web browser and wait for commands."""
         self.attempts = None
         self.finished = None
-        if driver:
-            self.driver = driver
-        else:
-            self._driver_init(webdriver.Chrome())
+        self.browser = browser
+        self.page = page
+        for key, value in cfg.get_config_options().items():
+            setattr(self, key, value)
+        self.info = cfg.get_user_info()
 
-    def _driver_init(self, driver):
-        """Initializes the driver implementation."""
-        driver.implicitly_wait(1)
-        driver.maximize_window()
-        self.driver = driver
-
-    def browse_to(self, url):
-        """Requests the ticket website. This will refresh the page as well."""
-        self.driver.get(url)
-
-    def get_num_tickets(self):
-        """Attempts to extract the number of tickets from the current page."""
-        try:
-            elem_css = "#cont_active_event_ticket_available > span"
-            num_tickets_str = self.driver.find_element_by_css_selector(elem_css).text
-            return int(num_tickets_str)
-        except NoSuchElementException:
-            return 0
-
-    def get_ticket_date(self):
-        """Attempts to extract the date tickets are available from the page."""
-        try:
-            elem_css = "span.current_date"
-            datestr = self.driver.find_element_by_css_selector(elem_css).text
-            return datestr, datetime.strptime(datestr, "%B %d, %Y")
-        except NoSuchElementException:
-            return None, None
-
-    def register_form(self, wanted_tickets, info):
-        """Fills out the registration form on the current page."""
-        d = self.driver
-
-        if wanted_tickets == 1:
-            ticket_sel = "1 ticket"
-        else:
-            ticket_sel = "%s tickets" % wanted_tickets
-
-        Select(d.find_element_by_id("fld_tickets_number")).select_by_visible_text(ticket_sel)    
-        d.find_element_by_id("fld_firstname").send_keys(info['first_name'])
-        d.find_element_by_id("fld_lastname").send_keys(info['last_name'])
-        d.find_element_by_id("fld_zip").send_keys(info['zip'])
-        Select(d.find_element_by_id("fld_state")).select_by_visible_text(info['state'])
-        d.find_element_by_id("fld_phone_daytime").send_keys(info['daytime_phone'])
-        d.find_element_by_id("fld_phone_evening").send_keys(info['evening_phone'])
-        d.find_element_by_id("fld_phone_mobile").send_keys(info['mobile_phone'])
-        d.find_element_by_id("fld_email").send_keys(info['email'])
-        d.find_element_by_id("fld_emailVerify").send_keys(info['email'])
-        d.find_element_by_id("fld_terms").click()
-        d.find_element_by_id("lnk_form_ticket_submit").click()
-
-    def sign_up(self, url=COLBERT_REPORT_URL, info=None, wanted_tickets=2, start_date=None, end_date=None,
-                bad_dates=None):
-
-        """Runs a single attempt to sign up for tickets. 
-           Returns True if successful, otherwise False."""
-
-        self.browse_to(url)
-
-        # Determine if there are an acceptable number of tickets available
-        num_tickets = self.get_num_tickets()
-        if num_tickets < wanted_tickets:
-            print "%s of %s tickets available, not attempting sign-up." % (num_tickets, wanted_tickets)
+    def event_ok(self, event):
+        """Returns whether the specified event is acceptable for signing up."""
+        if event['tickets'] < self.wanted_tickets:
             return False
-
-        (ticket_datestr, ticket_date) = self.get_ticket_date()
-        if ticket_date is None:
-            print "Could not determine date of tickets, not attempting sign-up."
+        event_date = event['date']
+        if (self.start_date and event_date < self.start_date) \
+                or (self.end_date and event_date > self.end_date) \
+                or (self.bad_dates and event_date in self.bad_dates):
             return False
-
-        # Determine if the tickets are for an acceptable date
-        if (start_date and ticket_date < start_date) or (end_date and ticket_date > end_date) \
-                or (bad_dates and ticket_date in bad_dates):
-            print "%s tickets are available for %s, but it's bad date for you." % (num_tickets, ticket_datestr)
-            return False
-
-        print "Attempting to register for %s tickets on %s" % (wanted_tickets, ticket_datestr)
-        self.register_form(wanted_tickets, info)
-
         return True
 
-    def take_screenshot(self, msgtype="SUCCESS"):
+    def print_attempt(self, event):
+        """Outputs a message indicating what the bot is attempting to register for."""
+        print "Attempting to register for %s tickets on %s" % (self.wanted_tickets, Page.format_date(event['date']))
 
-        """Takes picture of the web browser screen."""
-
-        self.driver.get_screenshot_as_file("tickets-%s-%s.png" % (datetime.now().isoformat(), msgtype))
-
-    def reserve_tickets(self, wait_seconds=1, screencapture_failed=False, max_attempts=None, **kwargs):
-
-        """Repeatedly tries to sign up for tickets. If successful, it takes a 
-        screenshot, closes the browser and halts."""
-
+    def reserve_tickets(self, screencapture_failed=False, max_attempts=None):
+        """Repeatedly attempt to register for tickets, closes the browser and halts on success."""
         self.attempts = 0
         self.finished = False
         while not self.finished and (not max_attempts or self.attempts < max_attempts):
-            self.finished = self.sign_up(**kwargs)
+            self.page.go()
+            self.finished = self.sign_up()
             self.attempts += 1
             if self.finished:
                 sleep(1)
-                self.take_screenshot()
+                self.browser.screenshot()
             else:
                 if screencapture_failed:
-                    self.take_screenshot('FAILED')
-                sleep(wait_seconds)
-        self.close()
+                    self.browser.screenshot('FAILED')
+                sleep(self.wait_seconds)
+        self.browser.close()
 
-    def close(self):
+    def sign_up(self):
+        """Attempts to sign up for available tickets. Returns True if success, False otherwise."""
 
-        """Closes the bot for business. This quits the browser session."""
+        try:
+            event = self.page.current_event()
+            if self.event_ok(event):
+                self.print_attempt(event)
+                self.page.register_form(self.wanted_tickets, self.info)
+                return True
+            else:
+                other_events = filter(self.event_ok, self.page.inactive_events())
+                event = other_events[0]  # Just attempt to register for the first valid event
+                self.print_attempt(event)
+                self.page.select_event(event)
+                self.page.register_form(self.wanted_tickets, self.info)
+                return True
+        except Exception as e:
+            print "Failed to sign up: " + e.message
+        return False
 
-        driver = self.driver
-        driver.quit()
-
-    def run(self, cfg):
-
-        """Runs the bot with the specified config."""
-
-        user_info = cfg.get_user_info()
-        config_options = cfg.get_config_options()
-        self.reserve_tickets(info=user_info, **config_options)
+    @staticmethod
+    def run(cfg):
+        """Creates and runs a bot with the specified config."""
+        options = cfg.get_config_options()
+        url = options.pop('url')
+        browser = Browser()
+        bot = TicketBot(browser, Page(browser, url), cfg)
+        bot.reserve_tickets()
 
 
 if __name__ == '__main__':
-    TicketBot().run(Config('config.ini'))
+    TicketBot.run(Config('config.ini'))

@@ -1,11 +1,10 @@
 import re
 from unittest import TestCase
 from colbertix import Config, TicketBot, COLBERT_REPORT_URL, DAILY_SHOW_URL
-from datetime import datetime
+from browser import Browser, Page
+from datetime import datetime, timedelta
 from ConfigParser import NoSectionError, NoOptionError
 from mock import Mock, patch
-from selenium.webdriver import Remote
-from selenium.common.exceptions import NoSuchElementException
 
 
 SAMPLE_USER_INFO = {'first_name': 'John',
@@ -17,18 +16,22 @@ SAMPLE_USER_INFO = {'first_name': 'John',
                     'mobile_phone': '6165551212',
                     'email': 'someone@example.com'}
 
+START_DATE = datetime(2014, 8, 8)
+END_DATE = datetime(2014, 10, 15)
+CFG_BAD_DATES = [datetime(2014, 10, 2),
+                 datetime(2014, 8, 23),
+                 datetime(2014, 8, 24),
+                 datetime(2014, 8, 25),
+                 datetime(2014, 8, 30),
+                 datetime(2014, 8, 31),
+                 datetime(2014, 9, 1)]
+
 SAMPLE_CONFIG_OPTIONS = {'url': COLBERT_REPORT_URL,
                          'wanted_tickets': 2,
                          'wait_seconds': 1,
-                         'start_date': datetime(2014, 8, 8),
-                         'end_date': datetime(2014, 10, 15),
-                         'bad_dates': [datetime(2014, 10, 2),
-                                       datetime(2014, 8, 23),
-                                       datetime(2014, 8, 24),
-                                       datetime(2014, 8, 25),
-                                       datetime(2014, 8, 30),
-                                       datetime(2014, 8, 31),
-                                       datetime(2014, 9, 1)]}
+                         'start_date': START_DATE,
+                         'end_date': END_DATE,
+                         'bad_dates': CFG_BAD_DATES}
 
 
 class ConfigTest(TestCase):
@@ -76,13 +79,12 @@ class ConfigTest(TestCase):
         self.assertEqual(COLBERT_REPORT_URL, cfg.get_config_options()['url'])
 
 
-class ScreenshotMatcher(object):
-
-    def __init__(self, pattern):
-        self.pattern = re.compile(pattern)
-
-    def __eq__(self, other):
-        return self.pattern.search(other)
+WANTED_TICKETS = SAMPLE_CONFIG_OPTIONS['wanted_tickets']
+GOOD_DATES = [START_DATE, END_DATE, END_DATE - timedelta(days=1)]
+BAD_DATES = CFG_BAD_DATES + [START_DATE - timedelta(days=1), END_DATE + timedelta(days=1)]
+GOOD_EVENTS = [dict(date=date, tickets=WANTED_TICKETS) for date in GOOD_DATES]
+BAD_EVENTS = [dict(date=date, tickets=WANTED_TICKETS-1) for date in GOOD_DATES] \
+             + [dict(date=date, tickets=WANTED_TICKETS) for date in BAD_DATES]
 
 
 class TypeMatcher(object):
@@ -97,204 +99,117 @@ class TypeMatcher(object):
 class TicketBotTest(TestCase):
 
     def setUp(self):
-        self.mock_driver = Mock(spec=Remote)
-        self.bot = TicketBot(self.mock_driver)
+        self.brz = Mock(spec=Browser)
+        self.pg = Mock(spec=Page)
+        self.cfg = Config('config.ini-example')
+        self.bot = TicketBot(self.brz, self.pg, self.cfg)
 
-    def test_browse_to(self):
-        expected_url = 'http://www.example.com/'
-        self.bot.browse_to(expected_url)
-        self.mock_driver.get.assert_called_with(expected_url)
+    def test_init_sets_config_options(self):
+        for key, val in self.cfg.get_config_options().items():
+            self.assertEqual(val, getattr(self.bot, key))
 
-    def test_close(self):
-        self.bot.close()
-        self.mock_driver.quit.assert_called()
+    def test_init_sets_user_info(self):
+        self.assertEqual(self.cfg.get_user_info(), self.bot.info)
 
-    def test_take_screenshot_success(self):
-        self.bot.take_screenshot()
-        match_success = ScreenshotMatcher('-SUCCESS.png$')
-        self.mock_driver.get_screenshot_as_file.assert_called_with(match_success)
-
-    def test_take_screenshot_failure(self):
-        self.bot.take_screenshot('FAILURE')
-        match_failure = ScreenshotMatcher('-FAILURE.png$')
-        self.mock_driver.get_screenshot_as_file.assert_called_with(match_failure)
+    def test_event_ok(self):
+        for event in GOOD_EVENTS:
+            self.assertTrue(self.bot.event_ok(event))
+        for event in BAD_EVENTS:
+            self.assertFalse(self.bot.event_ok(event))
 
     def test_reserve_tickets_success(self):
-        options = dict(SAMPLE_CONFIG_OPTIONS)
-        options['wait_seconds'] = 10  # Should never be used
-        with patch('colbertix.sleep') as mock_sleep:
-            self.bot.sign_up = Mock(return_value=True)
-            self.bot.take_screenshot = Mock()
-            self.bot.close = Mock()
-            self.bot.reserve_tickets(**options)
-            self.bot.sign_up.assert_called()
-            self.bot.take_screenshot.assert_called()
-            self.bot.close.assert_called()
-            mock_sleep.assert_called_with(1)
+        with patch('colbertix.sleep') as m_sleep, patch.object(TicketBot, 'sign_up', autospec=True) as m_sign_up:
+            m_bot = TicketBot(self.brz, self.pg, self.cfg)
+            m_sign_up.return_value = True
 
-    def test_reserve_tickets_max_attempts(self):
-        with patch('colbertix.sleep') as mock_sleep:
-            self.bot.sign_up = Mock(return_value=False)
-            self.bot.take_screenshot = Mock()
-            self.bot.close = Mock()
-            self.bot.reserve_tickets(max_attempts=1, **SAMPLE_CONFIG_OPTIONS)
-            self.bot.sign_up.assert_called()
-            self.bot.take_screenshot.assert_called()
-            self.bot.close.assert_called()
-            mock_sleep.assert_called_with(SAMPLE_CONFIG_OPTIONS['wait_seconds'])
-            self.assertEqual(1, self.bot.attempts)
+            m_bot.reserve_tickets()  # Code under test
 
-    def test_reserve_tickets_failed(self):
-        with patch('colbertix.sleep') as mock_sleep:
-            self.bot.sign_up = Mock(return_value=False)
-            self.bot.close = Mock()
-            self.bot.reserve_tickets(max_attempts=1, **SAMPLE_CONFIG_OPTIONS)
-            self.bot.sign_up.assert_called()
-            self.bot.close.assert_called()
-            mock_sleep.assert_called_with(SAMPLE_CONFIG_OPTIONS['wait_seconds'])
-            self.assertEqual(1, self.bot.attempts)
+            self.pg.go.assert_called_once_with()
+            m_sign_up.assert_called_once_with(m_bot)
+            m_sleep.assert_called_once_with(SAMPLE_CONFIG_OPTIONS['wait_seconds'])
+            self.brz.screenshot.assert_called_once_with()
+            self.brz.close.assert_called_once_with()
+            self.assertTrue(m_bot.finished)
+            self.assertEqual(1, m_bot.attempts)
 
-    def test_reserve_tickets_failed_with_screenshot(self):
-        with patch('colbertix.sleep') as mock_sleep:
-            self.bot.sign_up = Mock(return_value=False)
-            self.bot.take_screenshot = Mock()
-            self.bot.close = Mock()
-            self.bot.reserve_tickets(max_attempts=1, screencapture_failed=True, **SAMPLE_CONFIG_OPTIONS)
-            self.bot.sign_up.assert_called()
-            self.bot.take_screenshot.assert_called_once_with('FAILED')
-            self.bot.close.assert_called()
-            mock_sleep.assert_called_with(SAMPLE_CONFIG_OPTIONS['wait_seconds'])
-            self.assertEqual(1, self.bot.attempts)
+    def test_reserve_tickets_failures(self):
+        with patch('colbertix.sleep') as m_sleep, patch.object(TicketBot, 'sign_up', autospec=True) as m_sign_up:
+            m_bot = TicketBot(self.brz, self.pg, self.cfg)
+            attempts = 1
+            m_sign_up.return_value = False
 
-    def test_sign_up_simple(self):
-        options = dict(SAMPLE_CONFIG_OPTIONS)
-        del options['wait_seconds']
-        self.bot.browse_to = Mock()
-        self.bot.get_num_tickets = Mock(return_value=4)
-        self.bot.get_ticket_date = Mock(return_value=('2014/08/09', datetime(2014, 8, 9)))
-        self.bot.register_form = Mock()
-        self.assertTrue(self.bot.sign_up(info=SAMPLE_USER_INFO, **options), 'Successful should return true')
-        self.bot.browse_to.assert_called_once_with(options['url'])
-        self.bot.get_num_tickets.assert_called()
-        self.bot.get_ticket_date.assert_called()
-        self.bot.register_form.assert_called_once_with(options['wanted_tickets'], SAMPLE_USER_INFO)
+            m_bot.reserve_tickets(max_attempts=attempts, screencapture_failed=True)  # Code under test
 
-    def test_sign_up_bad_date(self):
-        options = dict(SAMPLE_CONFIG_OPTIONS)
-        del options['wait_seconds']
-        self.bot.browse_to = Mock()
-        self.bot.get_num_tickets = Mock(return_value=4)
-        self.bot.get_ticket_date = Mock(return_value=('2014/08/23', datetime(2014, 8, 23)))
-        self.bot.register_form = Mock()
-        self.assertFalse(self.bot.sign_up(info=SAMPLE_USER_INFO, **options), 'Bad dates should return false')
-        self.bot.browse_to.assert_called_once_with(options['url'])
-        self.bot.get_num_tickets.assert_called()
-        self.bot.get_ticket_date.assert_called()
+            self.pg.go.assert_called_once_with()
+            m_sign_up.assert_called_once_with(m_bot)
+            m_sleep.assert_called_once_with(SAMPLE_CONFIG_OPTIONS['wait_seconds'])
+            self.brz.close.assert_called_once_with()
+            self.assertFalse(m_bot.finished)
+            self.assertEqual(attempts, m_bot.attempts)
 
-    def test_sign_up_before_start_date(self):
-        options = dict(SAMPLE_CONFIG_OPTIONS)
-        del options['wait_seconds']
-        self.bot.browse_to = Mock()
-        self.bot.get_num_tickets = Mock(return_value=4)
-        self.bot.get_ticket_date = Mock(return_value=('2014/07/23', datetime(2014, 7, 23)))
-        self.bot.register_form = Mock()
-        self.assertFalse(self.bot.sign_up(info=SAMPLE_USER_INFO, **options), 'Bad dates should return false')
-        self.bot.browse_to.assert_called_once_with(options['url'])
-        self.bot.get_num_tickets.assert_called()
-        self.bot.get_ticket_date.assert_called()
+    def test_reserve_tickets_failures_with_capture(self):
+        with patch('colbertix.sleep') as m_sleep, patch.object(TicketBot, 'sign_up', autospec=True) as m_sign_up:
+            m_bot = TicketBot(self.brz, self.pg, self.cfg)
+            attempts = 1
+            m_sign_up.return_value = False
 
-    def test_sign_up_after_end_date(self):
-        options = dict(SAMPLE_CONFIG_OPTIONS)
-        del options['wait_seconds']
-        self.bot.browse_to = Mock()
-        self.bot.get_num_tickets = Mock(return_value=4)
-        self.bot.get_ticket_date = Mock(return_value=('2015/08/23', datetime(2015, 8, 23)))
-        self.bot.register_form = Mock()
-        self.assertFalse(self.bot.sign_up(info=SAMPLE_USER_INFO, **options), 'Bad dates should return false')
-        self.bot.browse_to.assert_called_once_with(options['url'])
-        self.bot.get_num_tickets.assert_called()
-        self.bot.get_ticket_date.assert_called()
+            m_bot.reserve_tickets(max_attempts=attempts, screencapture_failed=True)  # Code under test
 
-    def test_sign_up_no_start_date(self):
-        options = dict(SAMPLE_CONFIG_OPTIONS)
-        del options['wait_seconds']
-        del options['start_date']
-        self.bot.browse_to = Mock()
-        self.bot.get_num_tickets = Mock(return_value=4)
-        self.bot.get_ticket_date = Mock(return_value=('2014/08/23', datetime(2014, 8, 9)))
-        self.bot.register_form = Mock()
-        self.assertTrue(self.bot.sign_up(info=SAMPLE_USER_INFO, **options), 'No start date should return true')
-        self.bot.browse_to.assert_called_once_with(options['url'])
-        self.bot.get_num_tickets.assert_called()
-        self.bot.get_ticket_date.assert_called()
+            self.pg.go.assert_called_once_with()
+            m_sign_up.assert_called_once_with(m_bot)
+            m_sleep.assert_called_once_with(SAMPLE_CONFIG_OPTIONS['wait_seconds'])
+            self.brz.close.assert_called_once_with()
+            self.assertFalse(m_bot.finished)
+            self.assertEqual(attempts, m_bot.attempts)
 
-    def test_sign_up_no_end_date(self):
-        options = dict(SAMPLE_CONFIG_OPTIONS)
-        del options['wait_seconds']
-        del options['end_date']
-        self.bot.browse_to = Mock()
-        self.bot.get_num_tickets = Mock(return_value=4)
-        self.bot.get_ticket_date = Mock(return_value=('2015/08/23', datetime(2015, 8, 23)))
-        self.bot.register_form = Mock()
-        self.assertTrue(self.bot.sign_up(info=SAMPLE_USER_INFO, **options), 'No start date should return true')
-        self.bot.browse_to.assert_called_once_with(options['url'])
-        self.bot.get_num_tickets.assert_called()
-        self.bot.get_ticket_date.assert_called()
+    def test_sign_up_current_ok(self):
+        self.pg.current_event.return_value = GOOD_EVENTS[0]
+        result = self.bot.sign_up()
+        self.assertTrue(result)
+        self.pg.register_form.assert_called_once_with(WANTED_TICKETS, SAMPLE_USER_INFO)
 
-    def test_sign_up_not_enough_tickets(self):
-        options = dict(SAMPLE_CONFIG_OPTIONS)
-        del options['wait_seconds']
-        self.bot.browse_to = Mock()
-        self.bot.get_num_tickets = Mock(return_value=1)
-        self.bot.get_ticket_date = Mock(return_value=('2014/08/09', datetime(2014, 8, 9)))
-        self.bot.register_form = Mock()
-        self.assertFalse(self.bot.sign_up(info=SAMPLE_USER_INFO, **options), 'Not enough tickets should return false')
-        self.bot.browse_to.assert_called_once_with(options['url'])
-        self.bot.get_num_tickets.assert_called()
-        self.bot.get_ticket_date.assert_called()
+    def test_sign_up_other_ok(self):
+        self.pg.current_event.return_value = BAD_EVENTS[0]
+        self.pg.inactive_events.return_value = GOOD_EVENTS
+        result = self.bot.sign_up()
+        self.assertTrue(result)
+        self.pg.select_event.assert_called_once_with(GOOD_EVENTS[0])
+        self.pg.register_form.assert_called_once_with(WANTED_TICKETS, SAMPLE_USER_INFO)
 
-    def test_sign_up_undetermined_date(self):
-        options = dict(SAMPLE_CONFIG_OPTIONS)
-        del options['wait_seconds']
-        self.bot.browse_to = Mock()
-        self.bot.get_num_tickets = Mock(return_value=4)
-        self.bot.get_ticket_date = Mock(return_value=(None, None))
-        self.bot.register_form = Mock()
-        self.assertFalse(self.bot.sign_up(info=SAMPLE_USER_INFO, **options), 'No date should return false')
-        self.bot.browse_to.assert_called_once_with(options['url'])
-        self.bot.get_num_tickets.assert_called()
-        self.bot.get_ticket_date.assert_called()
+    def test_sign_up_all_bad(self):
+        self.pg.current_event.return_value = BAD_EVENTS[0]
+        self.pg.inactive_events.return_value = BAD_EVENTS
+        result = self.bot.sign_up()
+        self.assertFalse(result)
+        self.assertFalse(self.pg.register_form.called)
+
+    def test_sign_up_current_raises(self):
+        self.pg.current_event.side_effect = Exception
+        result = self.bot.sign_up()
+        self.assertFalse(result)
+        self.assertFalse(self.pg.register_form.called)
+
+    def test_sign_up_inactive_events_raises(self):
+        self.pg.current_event.return_value = BAD_EVENTS[0]
+        self.pg.inactive_events.side_effect = Exception
+        result = self.bot.sign_up()
+        self.assertFalse(result)
+        self.assertFalse(self.pg.register_form.called)
+
+    def test_sign_up_select_event_raises(self):
+        self.pg.current_event.return_value = BAD_EVENTS[0]
+        self.pg.inactive_events.return_value = GOOD_EVENTS
+        self.pg.select_event.side_effect = Exception
+        result = self.bot.sign_up()
+        self.assertFalse(result)
+        self.assertFalse(self.pg.register_form.called)
 
     def test_run(self):
-        cfg = Config('config.ini-example')
-        self.bot.reserve_tickets = Mock()
-        self.bot.run(cfg)
-        self.bot.reserve_tickets.assert_called_once_with(info=SAMPLE_USER_INFO, **SAMPLE_CONFIG_OPTIONS)
+        with patch('colbertix.Browser') as m_brz, patch('colbertix.TicketBot') as m_bot:
+            m_bot.return_value = m_bot
+            TicketBot.run(Config('config.ini-example'))
+            m_bot.assert_called_with_any(TypeMatcher(Browser), TypeMatcher(Page), TypeMatcher(Config))
+            m_brz.assert_called_with()
+            m_bot.reserve_tickets.assert_called_with()
 
-    def test_driver_init(self):
-        driver = Mock(spec=Remote)
-        self.bot._driver_init(driver)
-        driver.implicitly_wait.assert_called_once_with(1)
-        driver.maximize_window.assert_called_once_with()
-        self.assertEquals(driver, self.bot.driver)
 
-    def test_default_init_creates_chrome(self):
-        with patch('colbertix.webdriver.Chrome') as mock_chrome, \
-                patch.object(TicketBot, '_driver_init', autospec=True) as mock_init:
-            t = TicketBot()
-            mock_chrome.assert_called()
-            mock_init.assert_called_once_with(t, mock_chrome())
-
-    def test_get_num_tickets_failed(self):
-        def raise_no_element(*args):
-            raise NoSuchElementException
-        self.mock_driver.find_element_by_css_selector = Mock(side_effect=raise_no_element)
-        result = self.bot.get_num_tickets()
-        self.assertEquals(0, result)
-
-    def test_get_ticket_date_failed(self):
-        def raise_no_element(*args):
-            raise NoSuchElementException
-        self.mock_driver.find_element_by_css_selector = Mock(side_effect=raise_no_element)
-        result = self.bot.get_ticket_date()
-        self.assertEquals((None, None), result)
