@@ -25,6 +25,11 @@ def parse_date(s):
     return datetime.strptime(s, '%m/%d/%Y')
 
 
+def format_date(d):
+    """Formats a date for human consumption."""
+    return d.strftime('%m/%d/%Y')
+
+
 class Config:
 
     """A utility class for handling configuration of the colbertix config file."""
@@ -117,9 +122,17 @@ class TicketBot(object):
             return False
         return True
 
-    def print_attempt(self, event):
+    def log_attempt(self, event):
         """Outputs a message indicating what the bot is attempting to register for."""
         print "Attempting to register for %s tickets on %s" % (self.wanted_tickets, Page.format_date(event['date']))
+
+    def log_candidates(self, events, msg="Found %s candidates:"):
+        """Outputs a message indicating that candidate events were found."""
+        if isinstance(events, dict):
+            events = [events]
+        print msg % len(events)
+        for event in events:
+            print "    %s, tickets %s" % (format_date(event['date']), event['tickets'])
 
     def reserve_tickets(self, screencapture_failed=False, max_attempts=None):
         """Repeatedly attempt to register for tickets, closes the browser and halts on success."""
@@ -142,18 +155,31 @@ class TicketBot(object):
         """Attempts to sign up for available tickets. Returns True if success, False otherwise."""
 
         try:
-            event = self.page.current_event()
+            try:
+                event = self.page.current_event()
+                self.log_candidates(event)
+            except:
+                raise Exception('event not found')
             if self.event_ok(event):
-                self.print_attempt(event)
+                self.log_attempt(event)
                 self.page.register_form(self.wanted_tickets, self.info)
                 return True
             else:
-                other_events = filter(self.event_ok, self.page.inactive_events())
-                event = other_events[0]  # Just attempt to register for the first valid event
-                self.print_attempt(event)
-                self.page.select_event(event)
-                self.page.register_form(self.wanted_tickets, self.info)
-                return True
+                try:
+                    other_events = self.page.inactive_events()
+                    if other_events:
+                        self.log_candidates(other_events, msg="Found %s additional candidates")
+                except:
+                    raise Exception('no selectable events not found')
+                acceptable_events = filter(self.event_ok, other_events)
+                if acceptable_events:
+                    event = acceptable_events[0]  # Just attempt to register for the first valid event
+                    self.log_attempt(event)
+                    self.page.select_event(event)
+                    self.page.register_form(self.wanted_tickets, self.info)
+                    return True
+                else:
+                    raise Exception('no acceptable events found')
         except Exception as e:
             print "Failed to sign up: " + e.message
         return False
