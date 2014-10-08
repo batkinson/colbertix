@@ -62,6 +62,11 @@ class Browser(object):
         for e in self.elems(*args, **kwargs):
             Select(e).select_by_visible_text(item_text)
 
+    def select_by_value(self, item_value, *args, **kwargs):
+        """Selects the specified item in the queried elements selections."""
+        for e in self.elems(*args, **kwargs):
+            Select(e).select_by_value(item_value)
+
     def click(self, *args, **kwargs):
         """Clicks the queried elements."""
         for e in self.elems(*args, **kwargs):
@@ -160,6 +165,7 @@ class Page(object):
         b.keys(info['zip'], '#fld_zip')
         if b.elem('fld_state').is_displayed():
             b.select(info['state'], '#fld_state')
+        b.select_by_value(info['country'], '#fld_country')
         b.keys(info['daytime_phone'], '#fld_phone_daytime')
         b.keys(info['evening_phone'], '#fld_phone_evening')
         b.keys(info['mobile_phone'], '#fld_phone_mobile')

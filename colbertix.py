@@ -42,7 +42,7 @@ class Config:
         self.int_config_options = ['wanted_tickets', 'wait_seconds']
         self.date_config_options = ['start_date', 'end_date']
         self.dates_config_options = ['bad_dates']
-        self.user_info_keys = ['first_name', 'last_name', 'zip', 'state', 'daytime_phone',
+        self.user_info_keys = ['first_name', 'last_name', 'zip', 'country', 'state', 'daytime_phone',
                                'evening_phone', 'mobile_phone', 'email']
 
     def get(self, section, name):

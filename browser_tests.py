@@ -26,6 +26,7 @@ class BrowserTest(TestCase):
         'first_name': 'John',
         'last_name': 'Doe',
         'zip': '10003',
+        'country': 'US',
         'state': 'NY',
         'daytime_phone': '5558675309',
         'evening_phone': '5558675309',
@@ -85,3 +86,7 @@ class BrowserTest(TestCase):
         f = self.b.screenshot('FAILED')
         self.assertTrue(isfile(f))
         remove(f)
+
+    def test_click_and_register_form(self):
+        self.p.select_event(self.OTHER_EVENTS[1])
+        self.p.register_form(2, self.INFO, False)
