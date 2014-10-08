@@ -1,0 +1,629 @@
+html, body{
+	font-family: Arial, Helvetica, sans-serif;
+	color: #000000;
+}
+
+h2 {
+	color:#333333;
+	display:inline-block;
+	font-size:16px;
+	font-weight:bold;
+}
+
+/* This ID for test only. Remove it for real portal site */
+#test_container {
+	/*border: 1px solid #CCCCCC;*/
+	width:630px;
+	min-width: 630px;
+	height: auto;
+	margin: 0 0 0 0;
+	padding:0 0 0 0;
+	/*width:expression(document.body.clientWidth > 760? "100%" :"760px");*/
+}
+/* //This ID for test only. Remove it for real portal site */
+
+
+#rc_container {
+	/*border: 1px solid #C3C3C3;*/
+	background-color:#F9F9F9;
+	width:auto;
+	height:1090px;
+	margin: 0 0 0 0;
+	padding:20px 20px 20px 20px;
+}
+
+/* ---------------------------------------------------------------------------- */
+/* START: Text */
+/* END: Text */
+/* ---------------------------------------------------------------------------- */
+
+
+/* ---------------------------------------------------------------------------- */
+/* START: Links */
+a:link, a.rc_blue1:link {
+	color: #0066FF;
+	font-size: 12px;
+	font-family: Arial, Helvetica, sans-serif;
+	text-decoration: underline;
+}
+a:active, a.rc_blue1:active {
+	color: #0066FF;
+	font-size: 12px;
+	font-family: Arial, Helvetica, sans-serif;
+	text-decoration: underline;
+}
+a:visited, a.rc_blue1:visited {
+	color: #0066FF;
+	font-size: 12px;
+	font-family: Arial, Helvetica, sans-serif;
+	text-decoration: underline;
+}
+a:hover, a.rc_blue1:hover {
+	color: #4F95FF;
+	font-size: 12px;
+	font-family: Arial, Helvetica, sans-serif;
+	text-decoration: underline;
+}
+/* END: Links */
+/* ---------------------------------------------------------------------------- */
+
+
+/* ---------------------------------------------------------------------------- */
+/* START: Buttons */
+
+.button_submit {
+	display: block;
+	width: 66px;
+	height: 17px;
+	overflow: hidden;
+	text-indent: -1000em;
+	background: url(button_submit.gif) no-repeat 0 0;
+	margin: 0 auto;
+}
+
+
+.button_subscribe {
+	display: inline-block;
+	width: 66px;
+	height: 17px;
+	overflow: hidden;
+	text-indent: -1000em;
+	/*background: url(button_subscribe.gif) no-repeat 0 0;*/
+	background: url(button_submit.gif) no-repeat 0 0;
+	margin-top: 12px;
+}
+
+.button_availabledates:link, .button_availabledates:visited, .button_availabledates:hover, .button_availabledates:active {
+	background: url(button_availabledates.gif) no-repeat 0 0;
+	width: 116px;
+	height: 18px;
+	display: block;
+	overflow: hidden;
+	float: left;
+	text-align:center;
+	color:#FFFFFF;
+	text-decoration:none;
+	font-weight:bold;
+	margin-right: 5px;
+	padding:1px 0 0 0;
+}
+
+.button_calendar:link, .button_calendar:visited, .button_calendar:hover, .button_calendar:active {
+	background: url(button_calendar.gif) no-repeat 0 0;
+	width: 85px;
+	height: 18px;
+	display: block;
+	overflow: hidden;
+	float: left;
+	text-align:center;
+	color:#5B8FC9;
+	text-decoration:none;
+	font-weight:bold;	
+	padding:1px 0 0 0;	
+}
+
+.calendarUp,
+.calendarDown {
+	display: block;
+	border: 1px solid #9bc0ea;
+	text-indent: -1000em;
+	height: 21px;
+	outline: none;
+}
+
+.calendarUp {background: #e3edf7 url(button_calendarUp.gif) no-repeat 50% 50%;}
+.calendarDown {background: #e3edf7 url(button_calendarDown.gif) no-repeat 50% 50%;}
+
+.calendarUp:hover {background: #e3edf7 url(button_calendarUp_hover.gif) no-repeat 50% 50%;}
+.calendarDown:hover {background: #e3edf7 url(button_calendarDown_hover.gif) no-repeat 50% 50%;}
+
+.calendarUp.disabled {background: #e3edf7 url(button_calendarUp.gif) no-repeat 50% 50%;}
+.calendarDown.disabled {background: #e3edf7 url(button_calendarDown.gif) no-repeat 50% 50%;}
+
+/* END: Buttons */
+/* ---------------------------------------------------------------------------- */
+
+
+/* ---------------------------------------------------------------------------- */
+/*START: Forms */
+form {
+	margin:0 0 0 0;
+	padding:0 0 0 0;
+}
+
+.form_description {
+	color: #7b7b7b;
+	font-style: italic;
+	margin-top: 0;
+}
+
+.form_row {
+	padding: 4px 0 4px 0;
+	overflow: hidden;
+}
+
+.submit_row {
+	padding: 10px 0 4px 0;
+	overflow: hidden;
+	text-align: center;
+}
+
+.form_row label {
+	width: 100px;
+	display: inline-block;
+	text-align: right;
+	padding: 3px 5px 0 0;
+	float: left;
+}
+
+.form_row label.checkboxed {
+	width: auto;
+	text-align: left;
+	padding: 3px 5px 0 0;
+	margin-left: 105px;
+}
+
+.form_row label.checkboxed INPUT {
+	margin: 1px 7px 3px 4px;
+	float: left;
+}
+
+INPUT.input60 {width: 60px;}
+INPUT.input100 {width: 100px;}
+INPUT.input120 {width: 120px;}
+INPUT.input140 {width: 140px;}
+INPUT.input150 {width: 150px;}
+INPUT.input200 {width: 200px;}
+INPUT.input208 {width: 208px;}
+SELECT.input208 {width: 212px;}
+
+TEXTAREA.textarea210x50 {width: 210px; height: 50px}
+
+.form_error label {color: #cc3300;}
+.form_error input.highlightable, .form_error select.highlightable, .form_error textarea.highlightable {border: 2px solid #cc3300;}
+.form_error .form_error_message {
+	font-style: italic;
+	font-size: 11px;
+	color: #cc3300;
+	display: block;
+	margin: 2px 0 0 105px;
+}
+
+.form_note_message {
+	font-style: italic;
+	font-size: 11px;
+	color: #666666;
+	display: block;
+	margin: 2px 0 0 105px;
+}
+
+
+/* END: Forms  */
+/* ---------------------------------------------------------------------------- */
+
+
+/* ---------------------------------------------------------------------------- */
+/* START: reservation calendar page */
+
+/* Top content block */
+table.top_table {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+    width:100%;
+    margin: 0 0 0 0;
+    padding:0 0 0 0;    
+}
+
+table.top_table .left_col {
+		width:auto;
+		height: auto;
+		margin: 0 0 0 0;
+		padding:0 0 0 0;
+	}
+	
+	table.top_table .right_col {
+		width:285px;
+	}
+
+		#info_box {
+			width:276px;
+			height:auto;
+			margin:0 0 10px 10px;
+			padding:0 0 0 0;
+			float: right;
+		}
+
+			#info_box #top_bg{
+				background-image: url(top_plate1.png);
+				background-repeat:no-repeat;
+				width:276px;
+				height:18px;
+				margin:0 0 0 0;
+				padding:0 0 0 0;
+			}
+
+			#info_box #top_content {
+				background-image: url(top_plate2.png);
+				background-repeat:repeat-y;
+				width:276px;
+				height:auto;
+				margin:0 0 0 0;
+				padding:0 0 0 10px;
+				font-family: Arial, Helvetica, sans-serif;
+				font-size: 12px;
+			}
+
+			#info_box #top_content h2{margin: 0 15px 5px 5px;}
+			#info_box #top_content p {margin:0 15px 0 0;padding:0 0 0 0;}
+			#info_box #top_content p.cont_map_link {margin-top:3px;}
+			#info_box #top_content #cont_venue_message {padding-right:20px;}
+
+			#info_box #bottom_bg{
+				background-image: url(top_plate3.png);
+				background-repeat:no-repeat;
+				width:276px;
+				height:19px;
+				margin:0 0 0 0;
+				padding:0 0 0 0;
+			}
+/* //Top content block */
+
+
+
+/* Main content block */
+table.main_table {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	width:100%;
+	margin: 20px 0 0 0;
+	padding:0 0 0 0;	
+}
+
+	table.main_table .left_col {
+		width:208px;
+		height: auto;
+		margin: 0 0 0 0;
+		padding:0 0 0 0;
+	}
+
+.left_col .cornerBox {
+	width: 210px;
+}
+
+		#left_blue_button {
+			width:208px;
+			height:auto;
+			margin:0 0 5px 0;
+			padding:0 0 0 0;
+			overflow: hidden;
+		}
+
+
+		#left_calendar_box {
+			width:208px;
+			height:auto;
+			margin:0 0 20px 0;
+			padding:0 0 0 0;
+		}
+
+		#left_email_updates {
+			width:185px;
+			height:auto;
+			margin:0 0 20px 0;
+			padding:0 0 0 0;
+		}
+
+		#left_email_updates #fld_semail {
+			width:175px;
+		}
+
+			#left_email_updates h2{
+				margin: 5px 0;
+			}
+
+
+	table.main_table .right_col {
+		width:auto;
+	}
+
+		#form_container {
+			width:auto;
+			height:auto;
+			margin:0 0 0 20px;
+			padding:0 0 0 0;
+		}
+
+			.cornerBox { 
+				position: relative; 
+				background: #EFEFEF; 
+				width: 100%;
+				height:auto;
+				overflow:hidden;
+			}
+
+				.corner { 
+					background: url('corners2.gif') no-repeat scroll 0 0 #F9F9F9;
+					font-size: 0%;
+					position: absolute; 
+					width: 10px; 
+					height: 10px; 
+				}
+
+					.cornerBoxInner { 
+						padding: 10px;
+						border: 1px solid #CCCCCC; 
+					}
+
+					.TL { top: 0; left: 0; background-position: 0 0; }
+					.TR { top: 0; right: 0; background-position: -10px 0; }
+					.BL { bottom: 0; left: 0; background-position: 0 -10px; }
+					.BR { bottom: 0; right: 0; background-position: -10px -10px; }
+					
+				.cornerCenter {
+					height: 10px;
+					width: 100%;
+					background: url('corner-center.gif') no-repeat 50% 0; font-size: 0%;
+					position: absolute;
+					bottom: -9px;
+				}
+
+
+#cont_venue_info a, #cont_venue_info p {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+}
+
+.form_header {
+	overflow: hidden;
+}
+
+#cancel_container .form_header {
+	padding: 0 0 5px 10px;
+}
+				
+#cancel_container .cornerBox {
+	width:220px;
+}
+#cancel_container .headerMessage {
+/*	float:right;
+	margin-left:275px;
+	margin-top:-150px;*/
+}
+
+	.form_date {
+		font-size: 11px;
+		float: left;
+		overflow: hidden;
+	}
+
+		.current_date {
+			font-size: 20px;
+		}
+
+	.tickets_remaining {
+		font-size: 14px;
+		color: #666666;
+		float: right;
+		overflow: hidden;
+		padding-top: 7px;
+	}
+
+		.tickets_remaining SPAN {
+			color: #cc3300;
+			font-size: 25px;
+			font-weight: bold;
+		}
+
+.confirmBox H2 {
+	margin: 0;
+}
+		
+.confirmBox P {
+	font-size: 11px;
+	margin-top:5px;
+}
+
+.subscribeBox H2 {
+	margin-top: 0;
+	margin-bottom: 5px;
+}
+		
+.subscribeBox P {
+	font-size: 12px;
+	width: 200px;
+	margin: 5px 0 5px 0;
+}
+
+.headerMessage {
+	font-size: 19px;
+	color: #333333;
+        margin: 12px 0;
+}
+
+.arowedSelector {
+	
+}
+
+.arowedItem {
+	float: left;
+	margin: 10px 5px;
+}
+
+.arowedItem P {
+	padding: 0;
+	margin: 0;
+	font-size: 14px;
+	text-align: center;
+}
+
+.arowedItem P SPAN {
+	font-size: 11px;
+}
+
+.arowedItem .cornerBox {background: transparent; width: auto; overflow:visible;}
+.arowedItem .corner {visibility: hidden;}
+.arowedItem .cornerCenter {visibility: hidden;}
+.arowedItem .cornerBoxInner {border: 1px solid #F9F9F9; cursor:pointer;}
+
+.selectedItem .cornerBox {background: #efefef;}
+.selectedItem .corner {visibility: visible;}
+.selectedItem .cornerCenter {visibility: visible;}
+.selectedItem .cornerBoxInner {border:1px solid #CCCCCC;}
+
+/* //Main content block */
+
+/* //Daily Calendar */
+
+#dailyCalendar {
+	width: 205px;
+}
+
+.scrollable {
+	height: 280px;
+	position: relative; 
+	overflow: hidden; 
+}
+
+#dailyCalendar .items {
+	border-left: 1px solid #cccccc;
+	border-right: 1px solid #cccccc;
+	position: absolute;
+	height:20000em;
+}
+
+#dailyCalendar .carItem, #dailyCalendar .carNoItems {
+	background-color: #fff;
+	width: 100%;
+	border-bottom: 1px solid #ececec;
+	overflow: hidden;
+}
+
+#dailyCalendar .carItem {
+    height: 34px;
+}
+
+#dailyCalendar .selectedDay {
+	background: url(selectedDay.gif) repeat-x 0 0;
+}
+
+#dailyCalendar .carItem DIV {
+	font-size: 13px;
+	font-weight: bold;
+	padding: 0 10px 0 10px;
+}
+
+#dailyCalendar .carItem:hover {
+	cursor: pointer;
+	background-color: #eaf5ff;
+}
+
+#dailyCalendar .carItem DIV.carEvent {
+	float: left;
+	width:128px;
+}
+
+#dailyCalendar .carItem DIV.carEvent SPAN {
+	font-size: 11px;
+	font-weight: normal;
+	color: #666666;
+}
+
+#dailyCalendar .carItem DIV.eventsCount {
+	float: right;
+	font-size: 16px;
+	text-align: right;
+	width: 35px;
+	line-height: 34px;
+}
+
+#dailyCalendar .carNoItems DIV.carEvent {
+	float: left;
+	width:203px;
+	padding-top:8px;
+	text-align:center;
+	height: 34px;
+	font-weight:bold;
+}
+
+/* END: reservation calendar page */
+/* ---------------------------------------------------------------------------- */
+
+#container_events_calendar .ui-datepicker {width:auto;}
+
+#container_events_calendar #datepicker .hasEvent a {
+    color:#013380;
+    background:#a9ccee;
+}
+
+#container_events_calendar #datepicker .hasEvent .ui-state-active {
+    background:#a9ccee;
+}
+#container_events_calendar #datepicker .ui-state-active, #datepicker .hasEvent .ui-state-active {
+    border:1px solid red;
+}
+#container_events_calendar #datepicker .hasEvent .ui-state-active {
+    background:#cbe5ff;
+}
+#subscribe_message {
+    font-size: 12px;
+}
+.button_availabledates:link,
+.button_availabledates:visited,
+.button_availabledates:hover,
+.button_availabledates:active,
+.button_calendar:link,
+.button_calendar:visited,
+.button_calendar:hover,
+.button_calendar:active {
+	color: #5B8FC9;
+}
+.button_availabledates.selected:link,
+.button_availabledates.selected:visited,
+.button_availabledates.selected:hover,
+.button_availabledates.selected:active,
+.button_calendar.selected:link,
+.button_calendar.selected:visited,
+.button_calendar.selected:hover,
+.button_calendar.selected:active {
+	color: #FFFFFF;
+}
+.button_availabledates.selected:link,
+.button_availabledates.selected:visited,
+.button_availabledates.selected:hover,
+.button_availabledates.selected:active {
+	background-image: url(button_availabledates_hover.gif);
+}
+.button_calendar.selected:link,
+.button_calendar.selected:visited,
+.button_calendar.selected:hover,
+.button_calendar.selected:active {
+	background-image: url(button_calendar_hover.gif);
+}
+
+
+#subscribeForm #cont_semail{
+	margin: 7px 0px;
+}
+#subscribeForm #subscriptionErrors{
+	font-size: 12px;
+}
