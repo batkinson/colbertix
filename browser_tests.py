@@ -1,3 +1,4 @@
+from os.path import dirname, realpath
 from unittest import TestCase
 from browser import Browser, Page
 
@@ -13,7 +14,7 @@ class DateFormatTest(TestCase):
 
 class BrowserTest(TestCase):
 
-    LOCAL_URL = 'file:///home/batkinson/Downloads/Ticket%20Central%20-%20Show%20Site.html'
+    LOCAL_URL = 'file://' + dirname(realpath(__file__)) + '/test_site/ticket-central.html'
     CURRENT_EVENT_DATE = 'October 2, 2014'
     CURRENT_EVENT_TIX = 1
     CURRENT_EVENT = dict(date=Page.parse_date(CURRENT_EVENT_DATE), tickets=CURRENT_EVENT_TIX)
