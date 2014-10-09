@@ -15,11 +15,11 @@ class DateFormatTest(TestCase):
 class BrowserTest(TestCase):
 
     LOCAL_URL = 'file://' + dirname(realpath(__file__)) + '/test_site/ticket-central.html'
-    CURRENT_EVENT_DATE = 'October 2, 2014'
-    CURRENT_EVENT_TIX = 1
+    CURRENT_EVENT_DATE = 'September 30, 2014'
+    CURRENT_EVENT_TIX = 12
     CURRENT_EVENT = dict(date=Page.parse_date(CURRENT_EVENT_DATE), tickets=CURRENT_EVENT_TIX)
     OTHER_EVENTS = [
-        dict(date=Page.parse_date('September 30, 2014'), tickets=12),
+        dict(date=Page.parse_date('October 2, 2014'), tickets=1),
         dict(date=Page.parse_date('October 6, 2014'), tickets=12)
     ]
     INFO = {
@@ -74,7 +74,7 @@ class BrowserTest(TestCase):
         self.p.select_event(self.CURRENT_EVENT)
 
     def test_register_form(self):
-        self.p.register_form(1, self.INFO, False)
+        self.p.register_form(2, self.INFO, False)
 
     def test_screenshot(self):
         from os import remove
