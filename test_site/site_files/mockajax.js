@@ -1,3 +1,5 @@
+$.mockjaxSettings.responseTime = 225;
+
 $.mockjax({
   url: "/ajax/ticketlist",
   responseText: {
