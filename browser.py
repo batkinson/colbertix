@@ -57,12 +57,7 @@ class Browser(object):
         for e in self.elems(*args, **kwargs):
             e.send_keys(data)
 
-    def select(self, item_text, *args, **kwargs):
-        """Selects the specified item in the queried elements selections."""
-        for e in self.elems(*args, **kwargs):
-            Select(e).select_by_visible_text(item_text)
-
-    def select_by_value(self, item_value, *args, **kwargs):
+    def select(self, item_value, *args, **kwargs):
         """Selects the specified item in the queried elements selections."""
         for e in self.elems(*args, **kwargs):
             Select(e).select_by_value(item_value)
@@ -155,17 +150,13 @@ class Page(object):
     def register_form(self, wanted_tickets, info, submit=True):
         """Fills out the registration form on the current page."""
         b = self.browser
-        if wanted_tickets == 1:
-            ticket_sel = "1 ticket"
-        else:
-            ticket_sel = "%s tickets" % wanted_tickets
-        b.select(ticket_sel, '#fld_tickets_number')
+        b.select(str(wanted_tickets), '#fld_tickets_number')
         b.keys(info['first_name'], '#fld_firstname')
         b.keys(info['last_name'], '#fld_lastname')
         b.keys(info['zip'], '#fld_zip')
         if b.elem('fld_state').is_displayed():
             b.select(info['state'], '#fld_state')
-        b.select_by_value(info['country'], '#fld_country')
+        b.select(info['country'], '#fld_country')
         b.keys(info['daytime_phone'], '#fld_phone_daytime')
         b.keys(info['evening_phone'], '#fld_phone_evening')
         b.keys(info['mobile_phone'], '#fld_phone_mobile')
