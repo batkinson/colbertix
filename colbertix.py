@@ -98,7 +98,7 @@ class TicketBot(object):
 
         from colbertix import TicketBot, Config
 
-        TicketBot().run('config.ini')
+        TicketBot().run(Config('config.ini'))
     """
 
     def __init__(self, browser, page, cfg):
