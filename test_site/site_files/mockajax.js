@@ -99,3 +99,43 @@ $.mockjax({
   }
 });
 
+/**
+ * Convenience method for grabbing elements by xpath.
+ * Returns a list of elements
+ */
+function getXpath(expr) {
+   var result = new Array()
+   var xpr = document.evaluate(expr, document.body, null,
+                               XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
+   for (var item = xpr.iterateNext(); item != null; item = xpr.iterateNext()) {
+      result.push(item);
+   }
+   return result;
+}
+
+/**
+ * For getting the date string for an event by its cid.
+ */
+function getEventDate(id) {
+   var xpath = "//*[parent::*[@id = 'event_list_item_" + id + "']]/text()[position() = 1]";
+   return getXpath(xpath)[0].data;
+}
+
+/**
+ * Used to verify the contents of the ajax submission.
+ */
+function verifySubmit(data) {
+   if (typeof parsedFormData === 'undefined') {
+      return false;
+   }
+   for (key in data) {
+      if (key == 'event_date') {
+         if (!'cid' in parsedFormData || getEventDate(parsedFormData['cid']) != data[key])
+            return false;
+      } else if (!key in parsedFormData || parsedFormData[key] != data[key]) {
+         return false;
+      }
+   }
+   return true;
+}
+

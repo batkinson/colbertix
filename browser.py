@@ -1,6 +1,9 @@
 from selenium import webdriver
 from selenium.webdriver.support.ui import Select
+from selenium.common.exceptions import NoSuchElementException
 from datetime import datetime
+from json import dumps
+from time import sleep
 
 
 def create_driver():
@@ -66,6 +69,9 @@ class Browser(object):
         """Clicks the queried elements."""
         for e in self.elems(*args, **kwargs):
             self.driver.execute_script('arguments[0].click();', e)
+
+    def exec_js(self, script):
+        return self.driver.execute_script(script)
 
     def screenshot(self, msgtype="SUCCESS"):
         """Takes picture of the web browser screen, returns filename."""
@@ -165,3 +171,33 @@ class Page(object):
         b.click('#fld_terms')
         if submit:
             b.click('#lnk_form_ticket_submit')
+
+    def wait_for_modal(self):
+        """Hack to wait for the modal wait message to be hidden.
+           Explicit wait via an EC was not available in this version of selenium.
+        """
+        try:
+            while True:
+                self.browser.elem('div.blockUI.blockMsg.blockElement', by='css')
+                sleep(.1)
+        except NoSuchElementException:
+            pass
+
+    def verify_submission(self, event, tickets, info):
+        """Only useful with the test page, confirms the submitted data matches the specified data."""
+        verify_obj = {
+            'event_date': self.format_date(event['date']),
+            'tickets_number': tickets,
+            'firstname': info['first_name'],
+            'lastname':  info['last_name'],
+            'zip': info['zip'],
+            'country': info['country'],
+            'state': info['state'],
+            'phone_daytime': info['daytime_phone'],
+            'phone_evening': info['evening_phone'],
+            'phone_mobile': info['mobile_phone'],
+            'email': info['email'],
+            'emailVerify': info['email'],
+            'terms': 'ON'
+        }
+        return self.browser.exec_js('return verifySubmit(%s)' % dumps(verify_obj))

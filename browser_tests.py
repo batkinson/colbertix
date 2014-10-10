@@ -75,7 +75,9 @@ class BrowserTest(TestCase):
         self.p.select_event(self.CURRENT_EVENT)
 
     def test_register_form(self):
-        self.p.register_form(2, self.INFO, False)
+        self.p.register_form(2, self.INFO)
+        self.p.wait_for_modal()
+        self.assertTrue(self.p.verify_submission(self.CURRENT_EVENT, 2, self.INFO))
 
     def test_screenshot(self):
         from os import remove
@@ -87,6 +89,9 @@ class BrowserTest(TestCase):
         self.assertTrue(isfile(f))
         remove(f)
 
-    def test_click_and_register_form(self):
-        self.p.select_event(self.OTHER_EVENTS[1])
-        self.p.register_form(2, self.INFO, False)
+    def test_click_and_register(self):
+        event = self.OTHER_EVENTS[1]
+        self.p.select_event(event)
+        self.p.register_form(2, self.INFO)
+        self.p.wait_for_modal()
+        self.assertTrue(self.p.verify_submission(event, 2, self.INFO))
