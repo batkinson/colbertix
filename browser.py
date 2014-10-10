@@ -1,3 +1,4 @@
+from re import sub
 from selenium import webdriver
 from selenium.webdriver.support.ui import Select
 from selenium.common.exceptions import NoSuchElementException
@@ -86,8 +87,7 @@ class Browser(object):
 
 class Page(object):
 
-    DATE_FORMAT = "%B %-d, %Y"
-    DATE_PARSE_FORMAT = "%B %d, %Y"
+    DATE_FORMAT = "%B %d, %Y"
     INACTIVE_EVENTS_QUERY = "//*[contains(@class,'event_list_item') and not(contains(@class,'selectedDay'))" \
                             " and ./div[contains(@class,'eventsCount')]]"
     SELECT_EVENT_QUERY = "//*[contains(@class,'event_list_item')" \
@@ -104,12 +104,13 @@ class Page(object):
     @staticmethod
     def format_date(dt):
         """Formats datetime object into page format."""
-        return dt.strftime(Page.DATE_FORMAT)
+        date_str = dt.strftime(Page.DATE_FORMAT)
+        return sub(r'(\w+)\s+0?(\d+),\s+(\d+)', r'\1 \2, \3', date_str)
 
     @staticmethod
     def parse_date(dtstr):
         """Parses date string into datetime object."""
-        return datetime.strptime(dtstr, Page.DATE_PARSE_FORMAT)
+        return datetime.strptime(dtstr, Page.DATE_FORMAT)
 
     def go(self):
         """Navigate/refresh this page."""
