@@ -35,7 +35,7 @@ MULTI_ELEM_QUERY_TYPES = set(MULTI_ELEM_QUERIES.keys())
 class Browser(object):
 
     def __init__(self):
-        """Initializes the browser."""
+        """Initializes the web browser."""
         self.driver = create_driver()
 
     def go(self, url):

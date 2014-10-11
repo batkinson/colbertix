@@ -102,7 +102,7 @@ class TicketBot(object):
     """
 
     def __init__(self, browser, page, cfg):
-        """Initializer for the bot. It will start the web browser and wait for commands."""
+        """Initializer for the bot. It simply configures the bot."""
         self.attempts = None
         self.finished = None
         self.browser = browser
