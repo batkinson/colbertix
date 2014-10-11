@@ -6,11 +6,13 @@ from datetime import datetime
 from json import dumps
 from time import sleep
 
+WAIT_TIME = 1
+
 
 def create_driver():
     """Creates an returns webdriver instance."""
     drv = webdriver.Chrome()
-    drv.implicitly_wait(1)
+    drv.implicitly_wait(WAIT_TIME)
     drv.maximize_window()
     return drv
 
@@ -177,11 +179,13 @@ class Page(object):
            Explicit wait via an EC was not available in this version of selenium.
         """
         try:
+            self.browser.driver.implicitly_wait(0)
             while True:
                 self.browser.elem('div.blockUI.blockMsg.blockElement', by='css')
                 sleep(.1)
         except NoSuchElementException:
             pass
+        self.browser.driver.implicitly_wait(WAIT_TIME)
 
     def verify_submission(self, event, tickets, info):
         """Only useful with the test page, confirms the submitted data matches the specified data."""
