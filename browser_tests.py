@@ -55,6 +55,14 @@ class BrowserTest(TestCase):
         with self.assertRaises(Exception):
             self.b.elems('should not matter',by='bad_method')
 
+    def test_elems_query_with_root(self):
+        elems = self.b.elems('.tickets_remaining')
+        self.assertEqual(1, len(elems))
+        elems = self.b.elems('span', root=elems[0])
+        self.assertEqual(1, len(elems))
+        elem = elems[0]
+        self.assertEqual('12', elem.text)
+
     def test_check_current_query(self):
         query = Page.CHECK_CURRENT_QUERY % (self.CURRENT_EVENT_DATE, self.CURRENT_EVENT_TIX)
         self.assertIsNotNone(self.b.elem(query, by='xpath'))
