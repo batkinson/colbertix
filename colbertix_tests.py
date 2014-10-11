@@ -177,6 +177,12 @@ class TicketBotTest(TestCase):
         self.pg.select_event.assert_called_once_with(GOOD_EVENTS[0])
         self.pg.register_form.assert_called_once_with(WANTED_TICKETS, SAMPLE_USER_INFO)
 
+    def test_sign_up_current_bad_no_others(self):
+        self.pg.current_event.return_value = BAD_EVENTS[0]
+        self.pg.inactive_events.return_value = []
+        result = self.bot.sign_up()
+        self.assertFalse(result)
+
     def test_sign_up_all_bad(self):
         self.pg.current_event.return_value = BAD_EVENTS[0]
         self.pg.inactive_events.return_value = BAD_EVENTS
