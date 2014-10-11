@@ -164,6 +164,7 @@ class Page(object):
         b.keys(info['last_name'], '#fld_lastname')
         b.keys(info['zip'], '#fld_zip')
         b.select(info['country'], '#fld_country')
+        self.wait_for_modal()
         if b.elem('fld_state').is_displayed():
             b.select(info['state'], '#fld_state')
         b.keys(info['daytime_phone'], '#fld_phone_daytime')
