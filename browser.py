@@ -37,6 +37,7 @@ class Browser(object):
     def __init__(self):
         """Initializes the web browser."""
         self.driver = create_driver()
+        self._implicit_wait = True
 
     def go(self, url):
         """Navigates the browser to the specified URL."""
@@ -81,6 +82,18 @@ class Browser(object):
         file_name = "tickets-%s-%s.png" % (datetime.now().isoformat(), msgtype)
         self.driver.get_screenshot_as_file(file_name)
         return file_name
+
+    @property
+    def implicit_wait(self):
+        return self.implicit_wait
+
+    @implicit_wait.setter
+    def implicit_wait(self, enable):
+        if enable:
+            self.driver.implicitly_wait(WAIT_TIME)
+        else:
+            self.driver.implicitly_wait(0)
+        self._implicit_wait = enable
 
     def close(self):
         """Closes the browser."""
@@ -180,13 +193,13 @@ class Page(object):
            Explicit wait via an EC was not available in this version of selenium.
         """
         try:
-            self.browser.driver.implicitly_wait(0)
+            self.browser.implicit_wait = False
             while True:
                 self.browser.elem('div.blockUI.blockMsg.blockElement', by='css')
                 sleep(.1)
         except NoSuchElementException:
             pass
-        self.browser.driver.implicitly_wait(WAIT_TIME)
+        self.browser.implicit_wait = True
 
     def verify_submission(self, event, tickets, info):
         """Only useful with the test page, confirms the submitted data matches the specified data."""
