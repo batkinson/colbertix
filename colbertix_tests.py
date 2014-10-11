@@ -139,7 +139,7 @@ class TicketBotTest(TestCase):
             attempts = 1
             m_sign_up.return_value = False
 
-            m_bot.reserve_tickets(max_attempts=attempts, screencapture_failed=True)  # Code under test
+            m_bot.reserve_tickets(max_attempts=attempts)  # Code under test
 
             self.pg.go.assert_called_once_with()
             m_sign_up.assert_called_once_with(m_bot)
