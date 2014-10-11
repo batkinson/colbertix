@@ -33,6 +33,9 @@ class BrowserTest(TestCase):
         'mobile_phone': '5558675309',
         'email': 'john.doe@example.com'
     }
+    NON_US_INFO = dict(INFO)
+    NON_US_INFO.update(dict(country='GB', zip='SW1A 1AA'))
+    NON_US_INFO.pop('state')
 
     @classmethod
     def setUpClass(cls):
@@ -78,6 +81,11 @@ class BrowserTest(TestCase):
         self.p.register_form(2, self.INFO)
         self.p.wait_for_modal()
         self.assertTrue(self.p.verify_submission(self.CURRENT_EVENT, 2, self.INFO))
+
+    def test_register_form_non_us(self):
+        self.p.register_form(2, self.NON_US_INFO)
+        self.p.wait_for_modal()
+        self.assertTrue(self.p.verify_submission(self.CURRENT_EVENT, 2, self.NON_US_INFO))
 
     def test_screenshot(self):
         from os import remove

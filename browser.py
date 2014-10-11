@@ -165,7 +165,7 @@ class Page(object):
         b.keys(info['zip'], '#fld_zip')
         b.select(info['country'], '#fld_country')
         self.wait_for_modal()
-        if b.elem('fld_state').is_displayed():
+        if 'state' in info and b.elem('fld_state').is_displayed():
             b.select(info['state'], '#fld_state')
         b.keys(info['daytime_phone'], '#fld_phone_daytime')
         b.keys(info['evening_phone'], '#fld_phone_evening')
@@ -197,7 +197,6 @@ class Page(object):
             'lastname':  info['last_name'],
             'zip': info['zip'],
             'country': info['country'],
-            'state': info['state'],
             'phone_daytime': info['daytime_phone'],
             'phone_evening': info['evening_phone'],
             'phone_mobile': info['mobile_phone'],
@@ -205,4 +204,6 @@ class Page(object):
             'emailVerify': info['email'],
             'terms': 'ON'
         }
+        if 'state' in info:
+            verify_obj['state'] = info['state']
         return self.browser.exec_js('return verifySubmit(%s)' % dumps(verify_obj))
