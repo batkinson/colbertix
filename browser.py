@@ -161,9 +161,9 @@ class Page(object):
         b.keys(info['first_name'], '#fld_firstname')
         b.keys(info['last_name'], '#fld_lastname')
         b.keys(info['zip'], '#fld_zip')
+        b.select(info['country'], '#fld_country')
         if b.elem('fld_state').is_displayed():
             b.select(info['state'], '#fld_state')
-        b.select(info['country'], '#fld_country')
         b.keys(info['daytime_phone'], '#fld_phone_daytime')
         b.keys(info['evening_phone'], '#fld_phone_evening')
         b.keys(info['mobile_phone'], '#fld_phone_mobile')
