@@ -154,7 +154,7 @@ class Page(object):
         query = Page.CHECK_CURRENT_QUERY % (Page.format_date(event['date']), event['tickets'])
         self.browser.elem(query, by='xpath')
 
-    def register_form(self, wanted_tickets, info, submit=True):
+    def register_form(self, wanted_tickets, info):
         """Fills out the registration form on the current page."""
         b = self.browser
         b.select(str(wanted_tickets), '#fld_tickets_number')
@@ -170,8 +170,7 @@ class Page(object):
         b.keys(info['email'], '#fld_email')
         b.keys(info['email'], '#fld_emailVerify')
         b.click('#fld_terms')
-        if submit:
-            b.click('#lnk_form_ticket_submit')
+        b.click('#lnk_form_ticket_submit')
 
     def wait_for_modal(self):
         """Hack to wait for the modal wait message to be hidden.
