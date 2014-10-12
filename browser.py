@@ -130,6 +130,7 @@ class Page(object):
     def go(self):
         """Navigate/refresh this page."""
         self.browser.go(self.url)
+        self.wait_for_modal()
 
     def current_event(self):
         """Returns the current event for page as a dictionary. {date: (datetime), tickets: (int)}"""
@@ -162,6 +163,7 @@ class Page(object):
         """Selects the given event and waits for current event to be updated to it."""
         query = self.SELECT_EVENT_QUERY % (Page.format_date(event['date']), event['tickets'])
         self.browser.click(query, by='xpath')
+        self.wait_for_modal()
         self.check_current(event)
 
     def check_current(self, event):
