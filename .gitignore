@@ -2,7 +2,7 @@
 .project
 .pydevproject
 *.pyc
-*.png
+./*.png
 config.ini
 .idea/
 htmlcov/
