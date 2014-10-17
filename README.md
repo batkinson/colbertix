@@ -3,6 +3,8 @@
 A simple program that automates finding and registering for tickets to Comedy
 Central shows, like the Colbert Report and The Daily Show, via their web site.
 
+![Example Screenshot](screenshots/example-signup.png)
+
 ## Why?
 
 There is already a twitter feed Spiffomatic64, or @DailyTix, that provides
