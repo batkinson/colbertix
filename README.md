@@ -1,5 +1,7 @@
 # Colbert Ticket Bot
 
+[![Build Status](https://travis-ci.org/batkinson/colbertix.svg?branch=master)](https://travis-ci.org/batkinson/colbertix)
+
 A simple program that automates finding and registering for tickets to Comedy
 Central shows, like the Colbert Report and The Daily Show, via their web site.
 
