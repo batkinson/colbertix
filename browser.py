@@ -11,7 +11,7 @@ WAIT_TIME = 1
 
 def create_driver():
     """Creates an returns webdriver instance."""
-    drv = webdriver.Chrome()
+    drv = webdriver.Chrome('/usr/lib/chromium-browser/chromedriver')
     drv.implicitly_wait(WAIT_TIME)
     drv.maximize_window()
     return drv
