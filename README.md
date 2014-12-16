@@ -60,3 +60,9 @@ The bot will search for tickets based on the information you provided in the
 config file, and will stop once it has successfully registered for tickets. It
 will also take a screen shot of the state of the application immediately 
 following registration for your reference.
+
+## If you are still stumped
+
+In the event that the instructions above are not enough to get you up and
+running, I have [outlined the steps to run the bot on Amazon EC2](http://fmrldev.blogspot.com/2014/12/configuring-colbertix-on-ec2.html).
+
